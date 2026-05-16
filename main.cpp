@@ -1,18 +1,11 @@
 #include <chrono>
-#include <functional>
 #include <mutex>
 #include <thread>
-#include <stdio.h>
 #include <iostream>
-#include <vector>
 #include <condition_variable>
 #include <queue>
 
-void *HelloWorld(void *arg)
-{
-    std::cout << "Hello world!" << std::endl;
-    return 0;
-}
+std::mutex coutMutex;
 
 struct SensorData
 {
@@ -43,6 +36,14 @@ struct SensorBuffer
     bool simulacaoTerminou = false;
 };
 
+struct SurfaceBuffer
+{
+    std::queue<SurfacePoint> fila;
+    std::mutex mutex;
+    std::condition_variable dadoDisponivel;
+    bool reconstrucaoTerminou = false;
+};
+
 struct ActuatorData {
     int aceleracao; // -100 a 100
     bool ligaCamera;
@@ -54,14 +55,6 @@ struct RobotState {
     double velocidadeAtual;
     double posicaoX;
 };
-
-struct SurfacePoint {
-    double timestamp;
-    double x;
-    double y;
-    double confidence;
-};
-
 
 void ComandoNavegacao()
 {
@@ -79,8 +72,37 @@ void InspecaoCamera()
 {
 }
 
-void ColetorDados()
+void ColetorDados(SurfaceBuffer &buffer)
 {
+    while (true)
+    {
+        SurfacePoint ponto;
+
+        {
+            std::unique_lock<std::mutex> trava(buffer.mutex);
+
+            buffer.dadoDisponivel.wait(trava, [&buffer] {
+                return !buffer.fila.empty() || buffer.reconstrucaoTerminou;
+            });
+
+            if (buffer.fila.empty() && buffer.reconstrucaoTerminou)
+            {
+                break;
+            }
+
+            ponto = buffer.fila.front();
+            buffer.fila.pop();
+        }
+
+        {
+            std::lock_guard<std::mutex> trava(coutMutex);
+            std::cout << "Coletor: timestamp=" << ponto.timestamp << "s"
+                      << " x=" << ponto.x
+                      << " y=" << ponto.y
+                      << " confidence=" << ponto.confidence
+                      << std::endl;
+        }
+    }
 }
 
 
@@ -126,30 +148,45 @@ void SimulacaoSensores(SensorBuffer &buffer)
     buffer.dadoDisponivel.notify_one();
 }
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer)
+void ReconstrucaoSuperficie(SensorBuffer &sensorBuffer, SurfaceBuffer &surfaceBuffer)
 {
     const int tamanhoJanela = 3;
     std::queue<int> ultimasLeituras;
     int somaLeituras = 0;
+    bool primeiraLeituraEncoder = true;
+    bool encoderAnterior = false;
+    double posicaoX = 0.0;
+    int quantidadePontos = 0;
 
     while (true)
     {
         SensorData leitura;
 
         {
-            std::unique_lock<std::mutex> trava(buffer.mutex);
+            std::unique_lock<std::mutex> trava(sensorBuffer.mutex);
 
-            buffer.dadoDisponivel.wait(trava, [&buffer] {
-                return !buffer.fila.empty() || buffer.simulacaoTerminou;
+            sensorBuffer.dadoDisponivel.wait(trava, [&sensorBuffer] {
+                return !sensorBuffer.fila.empty() || sensorBuffer.simulacaoTerminou;
             });
 
-            if (buffer.fila.empty() && buffer.simulacaoTerminou)
+            if (sensorBuffer.fila.empty() && sensorBuffer.simulacaoTerminou)
             {
                 break;
             }
 
-            leitura = buffer.fila.front();
-            buffer.fila.pop();
+            leitura = sensorBuffer.fila.front();
+            sensorBuffer.fila.pop();
+        }
+
+        if (primeiraLeituraEncoder)
+        {
+            encoderAnterior = leitura.encoder;
+            primeiraLeituraEncoder = false;
+        }
+        else if (leitura.encoder != encoderAnterior)
+        {
+            posicaoX += 1.0;
+            encoderAnterior = leitura.encoder;
         }
 
         ultimasLeituras.push(leitura.lidar);
@@ -162,26 +199,53 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer)
         }
 
         double mediaMovel = static_cast<double>(somaLeituras) / ultimasLeituras.size();
+        quantidadePontos++;
 
-        std::cout << "Sensor: encoder=" << leitura.encoder
-                  << " lidar=" << leitura.lidar
-                  << " media_movel=" << mediaMovel
-                  << " timestamp=" << leitura.timestamp << "s"
-                  << std::endl;
+        SurfacePoint ponto;
+        ponto.timestamp = leitura.timestamp;
+        ponto.x = posicaoX;
+        ponto.y = mediaMovel;
+        ponto.confidence = quantidadePontos < 5 ? quantidadePontos / 5.0 : 1.0;
+
+        {
+            std::lock_guard<std::mutex> trava(surfaceBuffer.mutex);
+            surfaceBuffer.fila.push(ponto);
+        }
+
+        surfaceBuffer.dadoDisponivel.notify_one();
+
+        {
+            std::lock_guard<std::mutex> trava(coutMutex);
+            std::cout << "Sensor: encoder=" << leitura.encoder
+                      << " lidar=" << leitura.lidar
+                      << " media_movel=" << mediaMovel
+                      << " timestamp=" << leitura.timestamp << "s"
+                      << std::endl;
+        }
     }
+
+    {
+        std::lock_guard<std::mutex> trava(surfaceBuffer.mutex);
+        surfaceBuffer.reconstrucaoTerminou = true;
+    }
+
+    surfaceBuffer.dadoDisponivel.notify_one();
 }
 
 int main()
 {
     std::cout << "Começando..." << std::endl;
 
-    SensorBuffer buffer;
+    SensorBuffer sensorBuffer;
+    SurfaceBuffer surfaceBuffer;
 
-    std::thread simulacao(SimulacaoSensores, std::ref(buffer));
-    std::thread reconstrucao(ReconstrucaoSuperficie, std::ref(buffer));
+    std::thread simulacao(SimulacaoSensores, std::ref(sensorBuffer));
+    std::thread reconstrucao(ReconstrucaoSuperficie, std::ref(sensorBuffer), std::ref(surfaceBuffer));
+    std::thread coletor(ColetorDados, std::ref(surfaceBuffer));
 
     simulacao.join();
     reconstrucao.join();
+    coletor.join();
 
     std::cout << "Fim." << std::endl;
 

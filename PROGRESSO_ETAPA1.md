@@ -18,6 +18,7 @@ A Etapa 1 deve focar em:
 Nesta etapa ainda nao e necessario implementar:
 
 - MQTT;
+- IPC entre processos;
 - interface grafica da operacao remota;
 - interface grafica da simulacao;
 - sistema completo de visualizacao.
@@ -38,44 +39,348 @@ O codigo ja possui:
 - `SensorBuffer`: buffer compartilhado entre simulacao e reconstrucao;
 - `SimulacaoSensores`: tarefa produtora de dados;
 - `ReconstrucaoSuperficie`: tarefa consumidora de dados;
+- `SurfaceBuffer`: buffer compartilhado entre reconstrucao e coletor;
+- `ColetorDados`: tarefa consumidora de pontos reconstruidos;
 - media movel simples aplicada ao valor do LIDAR;
 - sincronizacao usando `std::mutex`;
 - espera por novos dados usando `std::condition_variable`;
-- duas threads criadas no `main`.
+- tres threads criadas no `main`.
 
 Fluxo atual:
 
 ```text
 SimulacaoSensores -> SensorBuffer -> ReconstrucaoSuperficie
+ReconstrucaoSuperficie -> SurfaceBuffer -> ColetorDados
 ```
 
 ## Arquitetura Planejada
 
-Fluxo geral desejado:
+A arquitetura sera dividida em dois niveis:
+
+- tarefas internas do robo, implementadas como threads dentro de um processo C++;
+- sistemas externos, implementados como processos separados na Etapa 2.
+
+Essa decisao acompanha a Figura 3 do enunciado:
+
+- blocos azuis: tarefas em C ou C++;
+- blocos verdes: tarefas em qualquer linguagem;
+- setas azuis: acesso direto a memoria;
+- setas verdes: IPC;
+- setas vermelhas: eventos;
+- setas laranjas: I/O.
+
+Na Etapa 1, devem ser implementadas as tarefas azuis e os buffers internos. As setas verdes, vermelhas e laranjas devem ser definidas na arquitetura, mas nao precisam ser implementadas ainda.
+
+### Decisao Principal
+
+Na Etapa 1, o sistema tera um unico processo principal:
 
 ```text
-Operacao Remota
-      |
-      v
-ComandoNavegacao
-      |
-      v
-ControleNavegacao -> Atuadores
-      |
-      v
-SimulacaoSensores -> SensorBuffer
-      |                  |
-      |                  v
-      |           ReconstrucaoSuperficie -> CameraEvent
-      |                  |                    |
-      v                  v                    v
-DistanciaPercorrida   SurfaceBuffer      InspecaoCamera
-                         |
-                         v
-                    ColetorDados
+Processo: rt_inspection_core
+Linguagem: C++
 ```
 
-Na Etapa 1, o objetivo e implementar o comportamento interno com threads e buffers. A operacao remota e a simulacao grafica podem ser simuladas por valores fixos ou impressao no terminal.
+Dentro desse processo, as tarefas em azul serao implementadas como threads:
+
+```text
+rt_inspection_core
+|
++-- thread ComandoNavegacao
++-- thread ControleNavegacao
++-- thread DistanciaPercorrida
++-- thread ReconstrucaoSuperficie
++-- thread InspecaoCamera
++-- thread ColetorDados
++-- thread SimulacaoSensoresTeste
+```
+
+A thread `SimulacaoSensoresTeste` nao e uma tarefa final da Figura 3. Ela existe na Etapa 1 apenas para gerar dados falsos e permitir testar os buffers enquanto a simulacao grafica da Etapa 2 ainda nao existe.
+
+### Por Que Usar Threads Para As Tarefas Azuis
+
+As tarefas azuis fazem parte do sistema embarcado do robo. Elas precisam trocar dados com baixa latencia e com controle direto de sincronizacao.
+
+Por isso, elas ficam no mesmo processo C++ e usam:
+
+- `std::thread` para execucao paralela;
+- `std::mutex` para proteger dados compartilhados;
+- `std::condition_variable` para acordar tarefas quando ha dado novo;
+- buffers em memoria para comunicacao produtor-consumidor.
+
+Vantagens dessa escolha:
+
+- implementacao mais simples para a Etapa 1;
+- menor custo de comunicacao que IPC;
+- facilita demonstrar mutex, variavel de condicao e regiao critica;
+- combina com as setas azuis da Figura 3, que representam acesso direto a memoria.
+
+### Por Que Usar Processos Na Etapa 2
+
+Na Etapa 2, alguns blocos devem virar processos separados porque sao sistemas externos ao controle embarcado:
+
+```text
+Processo 1: rt_inspection_core
+    C++
+    Tarefas de controle, navegacao, reconstrucao, camera e coleta.
+
+Processo 2: simulation_gui
+    Python com pygame, ou outra linguagem.
+    Simula navegacao, tunel, sensores e atuadores.
+
+Processo 3: remote_operation_gui
+    Python, web, terminal interativo ou outra linguagem.
+    Mostra estados do robo e envia comandos do operador.
+
+Processo 4: mqtt_broker
+    Exemplo: Mosquitto.
+    Faz a comunicacao publisher/subscriber entre os processos.
+```
+
+Nesse ponto entra IPC, porque processos separados nao compartilham memoria diretamente.
+
+### Quando Fazer IPC
+
+IPC sera implementado na Etapa 2, quando existirem pelo menos dois processos independentes.
+
+Nao faz sentido usar IPC entre threads internas do mesmo processo. Nesse caso, e melhor usar memoria compartilhada dentro do processo com mutex e condition variable.
+
+Uso planejado de IPC:
+
+```text
+simulation_gui <-> rt_inspection_core
+remote_operation_gui <-> rt_inspection_core
+rt_inspection_core <-> mqtt_broker
+```
+
+Tecnologia escolhida para IPC:
+
+```text
+MQTT
+```
+
+Justificativa:
+
+- o enunciado exige comunicacao MQTT na Etapa 2;
+- MQTT combina com o modelo publisher/subscriber mostrado na Figura 3;
+- permite que simulacao, operacao remota e robo rodem como processos independentes;
+- facilita testar cada componente separadamente.
+
+### O Que Sera Thread e O Que Sera Processo
+
+| Modulo | Etapa 1 | Etapa 2 | Justificativa |
+| --- | --- | --- | --- |
+| ComandoNavegacao | Thread C++ | Thread C++ | Tarefa interna do robo, periodo aproximado de 80 ms. |
+| ControleNavegacao | Thread C++ | Thread C++ | Tarefa interna do robo, controle de velocidade, periodo aproximado de 80 ms. |
+| DistanciaPercorrida | Thread C++ | Thread C++ | Tarefa interna do robo, leitura de encoder, periodo aproximado de 20 ms. |
+| ReconstrucaoSuperficie | Thread C++ | Thread C++ | Tarefa interna do robo, filtro de media movel, periodo aproximado de 100 ms. |
+| InspecaoCamera | Thread C++ | Thread C++ | Tarefa interna que fica aguardando acionamento. |
+| ColetorDados | Thread C++ | Thread C++ | Consome pontos reconstruidos e prepara dados para log/MQTT. |
+| SimulacaoSensoresTeste | Thread C++ temporaria | Removida ou substituida | Apenas gera dados falsos para testar a Etapa 1. |
+| Simulacao de Navegacao | Nao implementada como processo | Processo separado | Bloco verde da Figura 3, pode ser Python/pygame. |
+| Simulacao do Tunel | Nao implementada como processo | Processo separado | Bloco verde da Figura 3, gera perfil do teto e LIDAR. |
+| GUI de Simulacao | Nao implementada | Processo separado | Interface visual, I/O laranja, Etapa 2. |
+| GUI Operacao Remota | Nao implementada | Processo separado | Interface do operador, Etapa 2. |
+| MQTT broker | Nao implementado | Processo separado | IPC/pub-sub entre processos. |
+
+### Tarefas Ciclicas
+
+As tarefas com icone de ciclo na Figura 3 devem ser implementadas como loops periodicos.
+
+Periodos sugeridos pela figura:
+
+```text
+ControleNavegacao: 80 ms
+ComandoNavegacao: 80 ms
+DistanciaPercorrida: 20 ms
+ReconstrucaoSuperficie: 100 ms
+```
+
+Modelo recomendado:
+
+```cpp
+auto proximaExecucao = std::chrono::steady_clock::now();
+
+while (sistemaRodando) {
+    proximaExecucao += std::chrono::milliseconds(80);
+
+    // executar tarefa
+
+    std::this_thread::sleep_until(proximaExecucao);
+}
+```
+
+Isso e melhor que apenas `sleep_for`, porque reduz o acumulo de atraso ao longo do tempo.
+
+### Tarefas Por Evento
+
+Algumas tarefas nao precisam executar periodicamente o tempo todo.
+
+Exemplos:
+
+```text
+InspecaoCamera
+ColetorDados
+```
+
+`InspecaoCamera` deve ficar bloqueada ate receber um sinal de falha.
+
+`ColetorDados` pode ficar bloqueado ate existir um novo `SurfacePoint` no `SurfaceBuffer`.
+
+Na Etapa 1, os eventos vermelhos da figura podem ficar apenas definidos/documentados. Se forem implementados como teste antecipado, devem ser tratados como adiantamento da Etapa 2.
+
+### Arquitetura Da Etapa 1
+
+Fluxo implementado na Etapa 1:
+
+```text
+                    +------------------------+
+                    | rt_inspection_core C++ |
+                    +------------------------+
+                                |
+        -----------------------------------------------------
+        |             |              |            |          |
+        v             v              v            v          v
+ComandoNav     ControleNav    Distancia     Reconstrucao   Coletor
+   |                |              |              |          ^
+   |                |              |              v          |
+   |                |              |        SurfaceBuffer ---+
+   |                |              |
+   |                v              |
+   |          NavigationData       |
+   |                               |
+   +---------- CommandData --------+
+
+SimulacaoSensoresTeste -> SensorBuffer -> ReconstrucaoSuperficie
+SimulacaoSensoresTeste -> EncoderBuffer -> DistanciaPercorrida
+```
+
+Observacao:
+
+Na Etapa 1, `SimulacaoSensoresTeste` substitui temporariamente os blocos verdes de simulacao. Ela serve apenas para alimentar as threads azuis com dados falsos.
+
+### Arquitetura Da Etapa 2
+
+Fluxo planejado da Etapa 2:
+
+```text
+                         +-------------------+
+                         |   mqtt_broker     |
+                         |    Mosquitto      |
+                         +---------+---------+
+                                   |
+                 ------------------+------------------
+                 |                 |                 |
+                 v                 v                 v
+        +----------------+ +----------------+ +----------------------+
+        | simulation_gui | | rt_core C++    | | remote_operation_gui |
+        | Python/pygame  | | threads        | | Python/web/terminal  |
+        +----------------+ +----------------+ +----------------------+
+
+simulation_gui:
+    publica sensores
+    assina atuadores
+
+rt_inspection_core:
+    assina sensores e comandos
+    publica atuadores, estados e pontos de superficie
+
+remote_operation_gui:
+    publica comandos
+    assina estados e pontos de superficie
+```
+
+### Topicos MQTT Planejados Para A Etapa 2
+
+Topicos da simulacao para o robo:
+
+```text
+atr/sim/sensors
+```
+
+Exemplo de payload:
+
+```json
+{
+  "i_encoder": true,
+  "i_lidar": 103,
+  "timestamp": 12.5
+}
+```
+
+Topicos do robo para a simulacao:
+
+```text
+atr/core/actuators
+```
+
+Exemplo de payload:
+
+```json
+{
+  "o_aceleracao": 45,
+  "o_liga_camera": false
+}
+```
+
+Topicos da operacao remota para o robo:
+
+```text
+atr/remote/commands
+```
+
+Exemplo de payload:
+
+```json
+{
+  "c_automatico": true,
+  "c_man": false,
+  "c_direita": false,
+  "c_esquerda": false,
+  "c_para": false,
+  "j_sp_velocidade": 2,
+  "limite_falha": 10.0
+}
+```
+
+Topicos do robo para a operacao remota:
+
+```text
+atr/core/state
+atr/core/surface
+```
+
+Exemplo de estado:
+
+```json
+{
+  "e_inspecao": false,
+  "e_automatico": true,
+  "posicao_x": 15.0,
+  "velocidade": 1.8,
+  "o_aceleracao": 30
+}
+```
+
+Exemplo de ponto de superficie:
+
+```json
+{
+  "timestamp": 12.5,
+  "x": 15.0,
+  "y": 103.2,
+  "confidence": 0.8
+}
+```
+
+### Como Justificar No Relatorio
+
+Texto base para o relatorio:
+
+```text
+As tarefas de controle embarcado foram implementadas como threads dentro de um unico processo C++, pois possuem forte acoplamento temporal e compartilham dados com baixa latencia. A comunicacao entre essas tarefas ocorre por buffers protegidos por mutexes e variaveis de condicao.
+
+Os sistemas externos, como a simulacao grafica e a operacao remota, foram planejados como processos separados para a Etapa 2. A comunicacao entre processos sera realizada via MQTT, seguindo o modelo publisher/subscriber indicado na arquitetura do enunciado.
+```
 
 ## Estruturas de Dados
 
@@ -194,7 +499,7 @@ O mutex deve ser usado somente para acessar a fila. Processamentos demorados dev
 
 ### SurfaceBuffer
 
-Ainda deve ser implementado.
+Implementado.
 
 Fluxo:
 
@@ -218,7 +523,7 @@ struct SurfaceBuffer {
 
 ### CameraEvent
 
-Ainda deve ser implementado.
+Ainda nao e obrigatorio na Etapa 1.
 
 Fluxo:
 
@@ -239,6 +544,10 @@ struct CameraEvent {
 ```
 
 Esse evento nao precisa ser uma fila no inicio. Ele apenas sinaliza que existe uma falha para inspecionar.
+
+Observacao importante:
+
+Na Figura 3, esse tipo de interacao aparece como seta vermelha, ou seja, comunicacao via evento. O enunciado diz que as setas vermelhas nao precisam ser implementadas na Etapa 1. Portanto, para a Etapa 1, basta definir esse evento na arquitetura. A implementacao pode ficar para a Etapa 2 ou ser feita como adiantamento, caso sobre tempo.
 
 ## Funcoes e Responsabilidades
 
@@ -338,11 +647,12 @@ for (int i = 0; i < 10000000; i++) {
 
 ### ColetorDados
 
-Status: ainda nao implementada.
+Status: parcialmente implementada.
 
 Responsabilidade:
 
 - consumir `SurfacePoint` do `SurfaceBuffer`;
+- imprimir os pontos reconstruidos recebidos;
 - calcular ou atualizar nivel de confianca;
 - gravar dados em arquivo `.csv`;
 - futuramente disponibilizar dados via MQTT.
@@ -438,9 +748,87 @@ Limite a aceleracao entre -100 e 100.
 
 ## Ordem Recomendada de Implementacao
 
-### Passo 1: detectar falha no LIDAR
+### Passo 1: criar SurfaceBuffer
 
-Adicionar anomalia na simulacao e detectar variacao brusca na reconstrucao.
+Adicionar buffer entre `ReconstrucaoSuperficie` e `ColetorDados`.
+
+Resultado esperado:
+
+```text
+Reconstrucao produz SurfacePoint
+ColetorDados consome SurfacePoint
+```
+
+### Passo 2: gerar SurfacePoint
+
+Fazer `ReconstrucaoSuperficie` transformar cada leitura filtrada em um ponto da superficie.
+
+Resultado esperado:
+
+```text
+timestamp=...
+x=...
+y=...
+confidence=...
+```
+
+### Passo 3: implementar ColetorDados
+
+Fazer `ColetorDados` consumir `SurfacePoint` do `SurfaceBuffer`.
+
+Resultado esperado:
+
+```text
+Coletor recebeu SurfacePoint
+```
+
+### Passo 4: implementar DistanciaPercorrida
+
+Usar encoder para atualizar posicao horizontal `x`.
+
+Resultado esperado:
+
+```text
+Distancia percorrida: 1 m
+Distancia percorrida: 2 m
+```
+
+### Passo 5: implementar ComandoNavegacao simulado
+
+Criar uma tarefa ciclica que define modo automatico/manual e setpoint de velocidade.
+
+Resultado esperado:
+
+```text
+Modo automatico
+SP velocidade=2.0
+```
+
+### Passo 6: implementar ControleNavegacao proporcional
+
+Ler setpoint, comparar com velocidade atual e calcular aceleracao.
+
+Resultado esperado:
+
+```text
+erro=...
+aceleracao=...
+```
+
+### Passo 7: criar InspecaoCamera como tarefa azul
+
+Criar a thread da camera. Na Etapa 1, ela pode ficar em espera controlada ou executar um teste simples, pois o evento vermelho completo nao e obrigatorio ainda.
+
+Resultado esperado:
+
+```text
+InspecaoCamera iniciada
+InspecaoCamera aguardando sinal futuro
+```
+
+### Passo 8: opcionalmente detectar falha no LIDAR
+
+Adicionar anomalia na simulacao de teste e detectar variacao brusca na reconstrucao.
 
 Resultado esperado:
 
@@ -448,9 +836,9 @@ Resultado esperado:
 Falha detectada em timestamp=...
 ```
 
-### Passo 2: criar CameraEvent
+### Passo 9: opcionalmente criar CameraEvent
 
-Adicionar evento sincronizado entre `ReconstrucaoSuperficie` e `InspecaoCamera`.
+Adicionar evento sincronizado entre `ReconstrucaoSuperficie` e `InspecaoCamera`. Esta parte prepara a Etapa 2.
 
 Resultado esperado:
 
@@ -460,62 +848,7 @@ Camera iniciou inspecao
 Camera terminou processamento
 ```
 
-### Passo 3: implementar InspecaoCamera
-
-Criar uma thread nova para camera.
-
-Resultado esperado:
-
-```text
-Camera aguardando evento
-Camera processando falha
-```
-
-### Passo 4: criar SurfaceBuffer
-
-Adicionar buffer entre reconstrucao e coletor.
-
-Resultado esperado:
-
-```text
-Reconstrucao produz SurfacePoint
-ColetorDados consome SurfacePoint
-```
-
-### Passo 5: implementar ColetorDados
-
-Gravar os pontos em CSV.
-
-Resultado esperado:
-
-```text
-dados_superficie.csv
-```
-
-### Passo 6: implementar DistanciaPercorrida
-
-Usar encoder para atualizar posicao.
-
-Resultado esperado:
-
-```text
-Distancia percorrida: 1 m
-Distancia percorrida: 2 m
-```
-
-### Passo 7: implementar comando e controle de navegacao
-
-Criar setpoint de velocidade e controle proporcional simples.
-
-Resultado esperado:
-
-```text
-SP velocidade=2.0
-velocidade atual=...
-aceleracao=...
-```
-
-### Passo 8: organizar relatorio da Etapa 1
+### Passo 10: organizar relatorio da Etapa 1
 
 Documentar:
 
@@ -543,6 +876,10 @@ g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
 
 ## Checklist da Etapa 1
 
+- [x] Decidir arquitetura de threads e processos.
+- [x] Definir que as tarefas azuis serao threads C++.
+- [x] Definir que simulacao, operacao remota e MQTT serao processos da Etapa 2.
+- [x] Definir IPC planejado para Etapa 2 via MQTT.
 - [x] Criar threads iniciais.
 - [x] Criar `SensorData`.
 - [x] Criar `SensorBuffer`.
@@ -553,11 +890,11 @@ g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
 - [x] Implementar media movel simples.
 - [ ] Simular anomalia no LIDAR.
 - [ ] Detectar falha por variacao brusca.
-- [ ] Criar `CameraEvent`.
-- [ ] Implementar `InspecaoCamera`.
-- [ ] Criar `SurfaceBuffer`.
-- [ ] Gerar `SurfacePoint`.
-- [ ] Implementar `ColetorDados`.
+- [ ] Criar thread `InspecaoCamera` como tarefa azul, mesmo que ainda sem evento real.
+- [ ] Criar `CameraEvent` como item opcional ou preparacao para a Etapa 2.
+- [x] Criar `SurfaceBuffer`.
+- [x] Gerar `SurfacePoint`.
+- [x] Implementar `ColetorDados`.
 - [ ] Gravar arquivo CSV.
 - [ ] Implementar distancia percorrida usando encoder.
 - [ ] Implementar comando de navegacao simulado.
@@ -625,7 +962,25 @@ ReconstrucaoSuperficie -> ColetorDados
 
 ## Proximo Incremento Recomendado
 
-Implementar:
+Implementar primeiro o caminho obrigatorio de buffers da Etapa 1:
+
+```text
+ReconstrucaoSuperficie
+-> SurfaceBuffer
+-> ColetorDados
+```
+
+Esse incremento demonstra o padrao produtor-consumidor entre duas tarefas azuis usando memoria compartilhada, mutex e variavel de condicao.
+
+Depois implementar:
+
+```text
+DistanciaPercorrida
++ CommandData
++ ControleNavegacao proporcional simples
+```
+
+Implementacao opcional, se sobrar tempo:
 
 ```text
 anomalia simulada no LIDAR
@@ -634,9 +989,4 @@ anomalia simulada no LIDAR
 + InspecaoCamera
 ```
 
-Esse incremento e importante porque demonstra dois tipos de sincronizacao:
-
-- buffer produtor-consumidor;
-- evento entre tarefas.
-
-Esses dois mecanismos sao centrais para a Etapa 1.
+Essa parte opcional ja prepara as setas vermelhas de evento da Etapa 2.
