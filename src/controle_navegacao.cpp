@@ -1,14 +1,3 @@
-// Implemente aqui a tarefa ControleNavegacao.
-//
-// Responsabilidade:
-// - ler o setpoint de velocidade;
-// - ler a velocidade atual do robo;
-// - calcular erro = setpoint - velocidadeAtual;
-// - gerar o comando de aceleracao;
-// - limitar a aceleracao entre -100 e 100.
-//
-// Comece com controle proporcional simples. Depois, se quiser, evolua para PID.
-
 #include "log.hpp"
 #include "shared_state.hpp"
 
@@ -20,6 +9,14 @@
 void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, SharedSystemControl &systemControl)
 {
     const double kp = 25.0;
+    const double ki = 1.5;
+    const double kd = 4.0;
+    const double periodoSegundos = 0.08;
+    const double limiteIntegral = 20.0;
+
+    double erroAnterior = 0.0;
+    double integralErro = 0.0;
+
     auto proximaExecucao = std::chrono::steady_clock::now();
     int ciclo = 0;
 
@@ -50,9 +47,15 @@ void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotStat
             emInspecao = robotState.estado.e_inspecao;
         }
 
-        const double setpointVelocidade = emInspecao ? std::min(comando.j_sp_velocidade, 1) : comando.j_sp_velocidade;
+        const double setpointVelocidade = emInspecao ? std::min(static_cast<double>(comando.j_sp_velocidade), 1.0)
+                                                     : static_cast<double>(comando.j_sp_velocidade);
         const double erro = setpointVelocidade - velocidadeAtual;
-        const int aceleracao = static_cast<int>(std::clamp(kp * erro, -100.0, 100.0));
+        integralErro = std::clamp(integralErro + erro * periodoSegundos, -limiteIntegral, limiteIntegral);
+        const double derivadaErro = (erro - erroAnterior) / periodoSegundos;
+        erroAnterior = erro;
+
+        const double saidaPid = kp * erro + ki * integralErro + kd * derivadaErro;
+        const int aceleracao = static_cast<int>(std::clamp(saidaPid, -100.0, 100.0));
 
         {
             std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
@@ -62,7 +65,7 @@ void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotStat
 
         {
             std::lock_guard<std::mutex> trava(robotState.mutex_estado);
-            robotState.estado.velocidade += aceleracao * 0.001;
+            robotState.estado.velocidade = std::max(0.0, robotState.estado.velocidade + aceleracao * 0.001);
             velocidadeAtual = robotState.estado.velocidade;
         }
 
@@ -70,6 +73,8 @@ void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotStat
         {
             std::lock_guard<std::mutex> trava(coutMutex);
             std::cout << "ControleNavegacao: erro=" << erro
+                      << " integral=" << integralErro
+                      << " derivada=" << derivadaErro
                       << " aceleracao=" << aceleracao
                       << " velocidade=" << velocidadeAtual
                       << " inspecao=" << emInspecao

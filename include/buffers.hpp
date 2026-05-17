@@ -1,26 +1,15 @@
 #pragma once
-#include "types.hpp"
-#include <queue>
-#include <mutex> 
-#include <condition_variable>
 
-// Defina aqui os buffers compartilhados entre tarefas.
-// Cada buffer deve conter:
-// - uma fila std::queue<T> para armazenar dados;
-// - um std::mutex para proteger a fila;
-// - uma std::condition_variable para acordar a tarefa consumidora;
-// - uma flag de finalizacao para encerrar a thread sem travar.
-//
-// Sugestao de buffers:
-// - SensorBuffer: SimulacaoSensores -> ReconstrucaoSuperficie.
-// - EncoderBuffer: SimulacaoSensores -> DistanciaPercorrida.
-// - SurfaceBuffer: ReconstrucaoSuperficie -> ColetorDados.
-// - CameraEvent: ReconstrucaoSuperficie -> InspecaoCamera.
+#include "types.hpp"
+
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 struct SensorBuffer {
     std::queue<SensorData> fila_sensor;
-    std::mutex mutex_sensor; 
-    std::condition_variable dado_disponivel_var; 
+    std::mutex mutex_sensor;
+    std::condition_variable dado_disponivel_var;
     bool finalizado = false;
 };
 
@@ -31,10 +20,17 @@ struct EncoderBuffer {
     bool finalizado = false;
 };
 
+struct PositionBuffer {
+    std::queue<PositionData> fila_posicao;
+    std::mutex mutex_posicao;
+    std::condition_variable posicao_disponivel_var;
+    bool finalizado = false;
+};
+
 struct SurfaceBuffer {
     std::queue<SurfacePoint> fila_superficie;
-    std::mutex mutex_superficie; 
-    std::condition_variable surface_point_var; 
+    std::mutex mutex_superficie;
+    std::condition_variable surface_point_var;
     bool finalizado = false;
 };
 

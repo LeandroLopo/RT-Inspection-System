@@ -1,14 +1,3 @@
-// Implemente aqui a tarefa ColetorDados.
-//
-// Responsabilidade:
-// - consumir SurfacePoint do SurfaceBuffer usando condition_variable;
-// - calcular ou atualizar o nivel de confianca;
-// - imprimir os pontos recebidos durante os testes;
-// - depois gravar os pontos em arquivo CSV.
-//
-// Formato sugerido do CSV:
-// timestamp,x,y,confidence
-
 #include "buffers.hpp"
 #include "log.hpp"
 
@@ -23,7 +12,7 @@ void ColetorDados(SurfaceBuffer &surfaceBuffer)
     std::ofstream arquivo("surface_points.csv");
     arquivo << "timestamp,x,y,confianca\n";
     std::vector<SurfacePoint> historico;
-    
+
     while (true)
     {
         SurfacePoint ponto;

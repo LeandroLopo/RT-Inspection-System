@@ -1,22 +1,13 @@
-// Implemente aqui a tarefa ReconstrucaoSuperficie.
-//
-// Responsabilidade:
-// - consumir SensorData do SensorBuffer usando condition_variable;
-// - aplicar media movel no valor do LIDAR;
-// - ler a posicao X atual do estado compartilhado;
-// - gerar SurfacePoint com timestamp, x, y e confidence;
-// - inserir SurfacePoint no SurfaceBuffer;
-// - futuramente detectar variacoes bruscas e sinalizar CameraEvent.
-//
-// Primeiro objetivo:
-// fazer o fluxo SensorBuffer -> ReconstrucaoSuperficie -> SurfaceBuffer funcionar.
 #include "buffers.hpp"
 #include "log.hpp"
 #include "shared_state.hpp"
+
 #include <cmath>
 #include <iostream>
+#include <queue>
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, CameraEvent &cameraEvent) {
+void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, CameraEvent &cameraEvent)
+{
     const int tamanhoJanela = 3;
     const double limiteFalha = 10.0;
     std::queue<int> ultimasLeituras;
@@ -25,9 +16,10 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
     double mediaAnterior = 0.0;
     bool falhaJaDetectada = false;
 
-      while (true)
+    while (true)
     {
         SensorData leitura;
+        PositionData posicao;
 
         {
             std::unique_lock<std::mutex> trava(buffer.mutex_sensor);
@@ -45,6 +37,22 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
             buffer.fila_sensor.pop();
         }
 
+        {
+            std::unique_lock<std::mutex> trava(positionBuffer.mutex_posicao);
+
+            positionBuffer.posicao_disponivel_var.wait(trava, [&positionBuffer] {
+                return !positionBuffer.fila_posicao.empty() || positionBuffer.finalizado;
+            });
+
+            if (positionBuffer.fila_posicao.empty() && positionBuffer.finalizado)
+            {
+                break;
+            }
+
+            posicao = positionBuffer.fila_posicao.front();
+            positionBuffer.fila_posicao.pop();
+        }
+
         ultimasLeituras.push(leitura.i_lidar);
         somaLeituras += leitura.i_lidar;
 
@@ -60,10 +68,7 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
         SurfacePoint ponto;
 
         ponto.timestamp = leitura.timestamp;
-        {
-            std::lock_guard<std::mutex> trava(robotState.mutex_estado);
-            ponto.x = robotState.estado.posicao_x;
-        }
+        ponto.x = posicao.x;
         ponto.y = media_movel;
         ponto.confianca = 1.0;
 
@@ -110,11 +115,11 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
         primeiraMedia = false;
 
         {
-            std::lock_guard<std::mutex> trava (surfaceBuffer.mutex_superficie);
-            surfaceBuffer.fila_superficie.push (ponto); //inserção do dado de sensor na fila
+            std::lock_guard<std::mutex> trava(surfaceBuffer.mutex_superficie);
+            surfaceBuffer.fila_superficie.push(ponto);
         }
 
-        surfaceBuffer.surface_point_var.notify_one(); //evita espera ocupada e acorda a thread só quando há dado novo.
+        surfaceBuffer.surface_point_var.notify_one();
 
         {
             std::lock_guard<std::mutex> trava(coutMutex);
@@ -124,7 +129,6 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
                       << " timestamp=" << leitura.timestamp
                       << std::endl;
         }
-
     }
 
     {

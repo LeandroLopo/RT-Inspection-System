@@ -118,6 +118,7 @@ ReconstrucaoSuperficie = consumidora
 Exemplo 2:
 
 ```text
+DistanciaPercorrida -> PositionBuffer -> ReconstrucaoSuperficie
 ReconstrucaoSuperficie -> SurfaceBuffer -> ColetorDados
 ```
 
@@ -132,10 +133,10 @@ ColetorDados = consumidora
 Exemplo 3:
 
 ```text
-SimulacaoSensores -> EncoderBuffer -> DistanciaPercorrida
+SimulacaoSensores -> EncoderBuffer -> DistanciaPercorrida -> PositionBuffer -> ReconstrucaoSuperficie
 ```
 
-Nesse fluxo, a simulacao publica leituras do encoder em um buffer proprio. A tarefa `DistanciaPercorrida` consome essas leituras e atualiza a posicao horizontal do robo em `SharedRobotState`.
+Nesse fluxo, a simulacao publica leituras do encoder em um buffer proprio. A tarefa `DistanciaPercorrida` consome essas leituras, atualiza a posicao horizontal do robo em `SharedRobotState` e publica cada posicao em `PositionBuffer`.
 
 ## Buffers e Estados Compartilhados Implementados
 
@@ -143,6 +144,7 @@ Buffers com fila, mutex, variavel de condicao e flag de finalizacao:
 
 - `SensorBuffer`: transporta `SensorData` da simulacao para a reconstrucao.
 - `EncoderBuffer`: transporta `EncoderData` da simulacao para o calculo de distancia.
+- `PositionBuffer`: transporta a posicao calculada para a reconstrucao.
 - `SurfaceBuffer`: transporta `SurfacePoint` da reconstrucao para o coletor.
 - `CameraEvent`: sinaliza falha da reconstrucao para a camera.
 
@@ -157,10 +159,10 @@ Estados compartilhados protegidos por mutex:
 
 - `SimulacaoSensores`: gera leituras falsas de LIDAR e encoder.
 - `ReconstrucaoSuperficie`: aplica media movel no LIDAR, gera pontos de superficie e detecta falhas.
-- `DistanciaPercorrida`: calcula `posicao_x` a partir da troca de estado do encoder.
+- `DistanciaPercorrida`: calcula `posicao_x` a partir da troca de estado do encoder e publica amostras de posicao.
 - `ColetorDados`: consome pontos reconstruidos, calcula confianca online e grava CSV.
 - `ComandoNavegacao`: gera comando simulado de modo automatico e setpoint de velocidade.
-- `ControleNavegacao`: aplica controle proporcional simples e gera aceleracao.
+- `ControleNavegacao`: aplica controle PID simples e gera aceleracao.
 - `InspecaoCamera`: aguarda evento de falha e executa processamento pesado usando CPU.
 
 ## Mecanismos de Sincronizacao
@@ -238,8 +240,8 @@ Resultado observado:
 Exemplo de saida:
 
 ```text
-Falha detectada: x=4 y=115.667 variacao=12.6667 limite=10
-InspecaoCamera: iniciando inspecao em x=4 y=115.667 timestamp=...
+Falha detectada: x=5 y=115.667 variacao=12.6667 limite=10
+InspecaoCamera: iniciando inspecao em x=5 y=115.667 timestamp=...
 InspecaoCamera: processamento finalizado resultado=...
 ```
 
@@ -248,9 +250,9 @@ Exemplo do CSV:
 ```csv
 timestamp,x,y,confianca
 1.886e-06,0,100,0.2
-0.500124,0,100.5,0.4
+0.500096,1,100.5,0.4
 1.00024,2,101,0.6
-2.50063,4,115.667,0.8
+2.50054,5,115.667,0.6
 ```
 
 ## Texto Pronto Para Usar no Relatorio

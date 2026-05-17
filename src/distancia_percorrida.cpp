@@ -1,21 +1,10 @@
-// Implemente aqui a tarefa DistanciaPercorrida.
-//
-// Responsabilidade:
-// - consumir leituras do encoder;
-// - comparar o estado atual com o estado anterior;
-// - somar 1 metro quando o encoder trocar de estado;
-// - atualizar a posicao X no estado compartilhado.
-//
-// Regra inicial:
-// se encoderAtual != encoderAnterior, entao posicaoX += 1.0.
-
 #include "buffers.hpp"
 #include "log.hpp"
 #include "shared_state.hpp"
 
 #include <iostream>
 
-void DistanciaPercorrida(EncoderBuffer &encoderBuffer, SharedRobotState &robotState)
+void DistanciaPercorrida(EncoderBuffer &encoderBuffer, PositionBuffer &positionBuffer, SharedRobotState &robotState)
 {
     bool primeiraLeitura = true;
     bool encoderAnterior = false;
@@ -40,31 +29,51 @@ void DistanciaPercorrida(EncoderBuffer &encoderBuffer, SharedRobotState &robotSt
             encoderBuffer.fila_encoder.pop();
         }
 
+        bool houveMudanca = false;
+
         if (primeiraLeitura)
         {
             encoderAnterior = leitura.i_encoder;
             primeiraLeitura = false;
-            continue;
+        }
+        else if (leitura.i_encoder != encoderAnterior)
+        {
+            encoderAnterior = leitura.i_encoder;
+            houveMudanca = true;
         }
 
-        if (leitura.i_encoder != encoderAnterior)
+        PositionData posicao;
+        posicao.timestamp = leitura.timestamp;
+
         {
-            double posicaoAtualizada = 0.0;
-
+            std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+            if (houveMudanca)
             {
-                std::lock_guard<std::mutex> trava(robotState.mutex_estado);
                 robotState.estado.posicao_x += 1.0;
-                posicaoAtualizada = robotState.estado.posicao_x;
             }
+            posicao.x = robotState.estado.posicao_x;
+        }
 
-            encoderAnterior = leitura.i_encoder;
+        {
+            std::lock_guard<std::mutex> trava(positionBuffer.mutex_posicao);
+            positionBuffer.fila_posicao.push(posicao);
+        }
+        positionBuffer.posicao_disponivel_var.notify_one();
 
+        if (houveMudanca)
+        {
             {
                 std::lock_guard<std::mutex> trava(coutMutex);
-                std::cout << "DistanciaPercorrida: x=" << posicaoAtualizada
+                std::cout << "DistanciaPercorrida: x=" << posicao.x
                           << " m timestamp=" << leitura.timestamp
                           << std::endl;
             }
         }
     }
+
+    {
+        std::lock_guard<std::mutex> trava(positionBuffer.mutex_posicao);
+        positionBuffer.finalizado = true;
+    }
+    positionBuffer.posicao_disponivel_var.notify_one();
 }

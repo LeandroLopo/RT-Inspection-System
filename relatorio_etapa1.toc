@@ -1,27 +1,29 @@
 \babel@toc {brazil}{}\relax 
-\contentsline {section}{\numberline {1}Introdução}{2}{section.1}%
-\contentsline {section}{\numberline {2}Proposta de Arquitetura}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Diagrama da Arquitetura}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Tarefas Implementadas}{3}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Buffers e Estados Compartilhados}{4}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Mecanismos de Sincronização}{4}{subsection.2.4}%
+\contentsline {section}{\numberline {1}Introdução}{1}{section.1}%
+\contentsline {section}{\numberline {2}Proposta de Arquitetura}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Diagrama da Arquitetura}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Interações Planejadas Entre Processos}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Tarefas Implementadas}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Buffers e Estados Compartilhados}{4}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Mecanismos de Sincronização}{5}{subsection.2.5}%
 \contentsline {section}{\numberline {3}Implementação Desenvolvida}{5}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Tipos de Dados}{5}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Buffers Sincronizados}{5}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.2}Buffers Sincronizados}{6}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Simulação dos Sensores}{6}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Consumo com Variável de Condição}{6}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.4}Consumo com Variável de Condição}{7}{subsection.3.4}%
 \contentsline {subsection}{\numberline {3.5}Reconstrução da Superfície}{7}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Detecção de Falha}{7}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.6}Detecção de Falha}{8}{subsection.3.6}%
 \contentsline {subsection}{\numberline {3.7}Distância Percorrida}{8}{subsection.3.7}%
-\contentsline {subsection}{\numberline {3.8}Coletor de Dados}{8}{subsection.3.8}%
-\contentsline {subsection}{\numberline {3.9}Controle de Navegação}{9}{subsection.3.9}%
-\contentsline {subsection}{\numberline {3.10}Inspeção por Câmera}{9}{subsection.3.10}%
-\contentsline {subsection}{\numberline {3.11}Criação das Threads}{10}{subsection.3.11}%
-\contentsline {subsection}{\numberline {3.12}Compilação}{11}{subsection.3.12}%
-\contentsline {section}{\numberline {4}Resultados de Testes Preliminares}{11}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Teste 1: Troca de Dados entre Simulação e Reconstrução}{11}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Teste 2: Cálculo de Distância Percorrida}{11}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Teste 3: Coletor de Dados e Arquivo CSV}{12}{subsection.4.3}%
-\contentsline {subsection}{\numberline {4.4}Teste 4: Detecção de Falha e Acionamento da Câmera}{12}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Análise dos Testes}{12}{subsection.4.5}%
-\contentsline {section}{\numberline {5}Conclusão}{12}{section.5}%
+\contentsline {subsection}{\numberline {3.8}Coletor de Dados}{9}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Controle de Navegação}{10}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Inspeção por Câmera}{10}{subsection.3.10}%
+\contentsline {subsection}{\numberline {3.11}Criação das Threads}{11}{subsection.3.11}%
+\contentsline {subsection}{\numberline {3.12}Compilação}{12}{subsection.3.12}%
+\contentsline {section}{\numberline {4}Resultados de Testes Preliminares}{12}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Teste 1: Troca de Dados entre Simulação e Reconstrução}{12}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Teste 2: Cálculo de Distância Percorrida}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Teste 3: Coletor de Dados e Arquivo CSV}{13}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Teste 4: Detecção de Falha e Acionamento da Câmera}{13}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Teste 5: Comando e Controle de Navegação}{13}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}Análise dos Testes}{14}{subsection.4.6}%
+\contentsline {section}{\numberline {5}Conclusão}{14}{section.5}%

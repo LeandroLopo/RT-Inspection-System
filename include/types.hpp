@@ -1,50 +1,45 @@
 #pragma once
 
-// Defina aqui as estruturas de dados simples usadas por varias tarefas.
-// Sugestao:
-// - SensorData: leitura do encoder, LIDAR e timestamp.
-// - SurfacePoint: ponto reconstruido do teto com timestamp, x, y e confianca.
-// - RobotCommand: modo automatico/manual e setpoint de velocidade.
-// - RobotState: estado atual do robo, incluindo posicao, velocidade e inspecao.
-// - ActuatorData: aceleracao e comando para ligar a camera.
-
-
 struct SensorData {
-    bool i_encoder; // troca de estado a cada metro percorrido pelo robô
-    int i_lidar; // distância no eixo y, com relação à altura do robô
-    double timestamp; //
+    bool i_encoder = false;
+    int i_lidar = 0;
+    double timestamp = 0.0;
 };
 
 struct EncoderData {
-    bool i_encoder;
-    double timestamp;
+    bool i_encoder = false;
+    double timestamp = 0.0;
+};
+
+struct PositionData {
+    double timestamp = 0.0;
+    double x = 0.0;
 };
 
 struct SurfacePoint {
-    double timestamp;
-    double x;
-    double y;
-    double confianca; // Quanto mais medições próximas, maior o nível de confiança
+    double timestamp = 0.0;
+    double x = 0.0;
+    double y = 0.0;
+    double confianca = 0.0;
 };
 
 struct RobotCommand {
-    int j_sp_velocidade; // Setpoint de velocidade 
-    bool c_automatico; // passar o robô para o modo automático (true). O reset desse comando
-    bool c_man; // Comando para passar o robô para o modo manual (true).
-    bool c_direita; /// Comando para acelerar o robô para a direita.
-    bool c_esquerda; 
-    bool c_para;
+    int j_sp_velocidade = 0;
+    bool c_automatico = false;
+    bool c_man = false;
+    bool c_direita = false;
+    bool c_esquerda = false;
+    bool c_para = false;
 };
 
 struct RobotState {
-    bool e_automatico; // 0=manual 1=automático
-    bool e_inspecao; 
-    double posicao_x;
-    double velocidade;
-   
+    bool e_automatico = true;
+    bool e_inspecao = false;
+    double posicao_x = 0.0;
+    double velocidade = 0.0;
 };
 
 struct ActuatorData {
-    int o_aceleracao; //Determina a aceleração do veículo em percentual (-100 a 100%)
-    bool o_liga_camera; // ligar a câmera e realizar fotos da falha detectada na superfície
+    int o_aceleracao = 0;
+    bool o_liga_camera = false;
 };

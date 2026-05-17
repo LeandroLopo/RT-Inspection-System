@@ -30,13 +30,14 @@ Esses pontos ficam para a Etapa 2.
 O arquivo principal atual e:
 
 ```text
-main.cpp
+src/main.cpp
 ```
 
 O codigo ja possui:
 
 - `SensorData`: estrutura com dados simulados de sensores;
 - `SensorBuffer`: buffer compartilhado entre simulacao e reconstrucao;
+- `PositionBuffer`: buffer compartilhado entre distancia percorrida e reconstrucao;
 - `SimulacaoSensores`: tarefa produtora de dados;
 - `ReconstrucaoSuperficie`: tarefa consumidora de dados;
 - `SurfaceBuffer`: buffer compartilhado entre reconstrucao e coletor;
@@ -50,6 +51,7 @@ Fluxo atual:
 
 ```text
 SimulacaoSensores -> SensorBuffer -> ReconstrucaoSuperficie
+SimulacaoSensores -> EncoderBuffer -> DistanciaPercorrida -> PositionBuffer -> ReconstrucaoSuperficie
 ReconstrucaoSuperficie -> SurfaceBuffer -> ColetorDados
 ```
 
@@ -251,7 +253,7 @@ ComandoNav     ControleNav    Distancia     Reconstrucao   Coletor
    +---------- CommandData --------+
 
 SimulacaoSensoresTeste -> SensorBuffer -> ReconstrucaoSuperficie
-SimulacaoSensoresTeste -> EncoderBuffer -> DistanciaPercorrida
+SimulacaoSensoresTeste -> EncoderBuffer -> DistanciaPercorrida -> PositionBuffer -> ReconstrucaoSuperficie
 ```
 
 Observacao:
@@ -424,7 +426,7 @@ Responsabilidade:
 
 ### ActuatorData
 
-Ainda deve ser implementada.
+Implementada em `include/types.hpp`.
 
 Sugestao:
 
@@ -442,7 +444,7 @@ Responsabilidade:
 
 ### RobotState
 
-Ainda deve ser implementada.
+Implementada em `include/types.hpp`.
 
 Sugestao:
 
@@ -622,7 +624,7 @@ Depois esse limite pode ser configurado pela operacao remota.
 
 ### InspecaoCamera
 
-Status: ainda nao implementada.
+Status: implementada com PID simples.
 
 Responsabilidade:
 
@@ -677,13 +679,14 @@ Depois melhore usando proximidade entre medicoes.
 
 ### DistanciaPercorrida
 
-Status: ainda nao implementada.
+Status: implementada.
 
 Responsabilidade:
 
 - ler mudancas no encoder;
 - contar distancia percorrida;
-- atualizar posicao estimada do robo.
+- atualizar posicao estimada do robo;
+- publicar a posicao em `PositionBuffer` para a reconstrucao.
 
 Regra simples:
 
@@ -726,14 +729,7 @@ Responsabilidade:
 - calcular aceleracao;
 - enviar aceleracao para os atuadores.
 
-Comece com controle proporcional:
-
-```text
-erro = setpoint - velocidadeAtual
-aceleracao = Kp * erro
-```
-
-Depois evolua para PID:
+Controle usado:
 
 ```text
 P = Kp * erro
@@ -784,7 +780,7 @@ Coletor recebeu SurfacePoint
 
 ### Passo 4: implementar DistanciaPercorrida
 
-Usar encoder para atualizar posicao horizontal `x`.
+Usar encoder para atualizar posicao horizontal `x` e publicar uma amostra em `PositionBuffer`.
 
 Resultado esperado:
 
@@ -804,9 +800,9 @@ Modo automatico
 SP velocidade=2.0
 ```
 
-### Passo 6: implementar ControleNavegacao proporcional
+### Passo 6: implementar ControleNavegacao PID simples
 
-Ler setpoint, comparar com velocidade atual e calcular aceleracao.
+Ler setpoint, comparar com velocidade atual e calcular aceleracao usando termos proporcional, integral e derivativo.
 
 Resultado esperado:
 
@@ -865,13 +861,13 @@ Documentar:
 Usar:
 
 ```bash
-g++ -std=c++17 main.cpp -pthread -o rt_inspection
+g++ -std=c++17 -Wall -Wextra -pthread -Iinclude src/*.cpp -o build/rt_inspection
 ```
 
 Se estiver compilando a partir da pasta acima:
 
 ```bash
-g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
+g++ -std=c++17 -Wall -Wextra -pthread -IRT-Inspection-System/include RT-Inspection-System/src/*.cpp -o /tmp/rt_inspection
 ```
 
 ## Checklist da Etapa 1
@@ -897,8 +893,9 @@ g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
 - [x] Implementar `ColetorDados`.
 - [x] Gravar arquivo CSV.
 - [x] Implementar distancia percorrida usando encoder.
+- [x] Criar `PositionBuffer` para manter coerencia temporal entre posicao e LIDAR.
 - [x] Implementar comando de navegacao simulado.
-- [x] Implementar controle proporcional inicial.
+- [x] Implementar controle PID simples.
 - [x] Montar figura da arquitetura.
 - [x] Escrever relatorio parcial.
 
@@ -977,7 +974,7 @@ Depois implementar:
 ```text
 DistanciaPercorrida
 + CommandData
-+ ControleNavegacao proporcional simples
++ ControleNavegacao PID simples
 ```
 
 Implementacao opcional, se sobrar tempo:
