@@ -15,6 +15,11 @@ struct SensorData {
     double timestamp; //
 };
 
+struct EncoderData {
+    bool i_encoder;
+    double timestamp;
+};
+
 struct SurfacePoint {
     double timestamp;
     double x;

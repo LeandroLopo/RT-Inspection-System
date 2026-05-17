@@ -7,3 +7,45 @@
 // - definir setpoint de velocidade para o controlador.
 //
 // Comece com uma tarefa ciclica de 80 ms em modo automatico e velocidade desejada fixa.
+
+#include "log.hpp"
+#include "shared_state.hpp"
+
+#include <chrono>
+#include <iostream>
+#include <thread>
+
+void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState)
+{
+    const int totalCiclos = 70;
+    auto proximaExecucao = std::chrono::steady_clock::now();
+
+    for (int ciclo = 0; ciclo < totalCiclos; ciclo++)
+    {
+        proximaExecucao += std::chrono::milliseconds(80);
+
+        {
+            std::lock_guard<std::mutex> trava(sharedCommand.mutex_comando);
+            sharedCommand.comando.c_automatico = true;
+            sharedCommand.comando.c_man = false;
+            sharedCommand.comando.c_direita = false;
+            sharedCommand.comando.c_esquerda = false;
+            sharedCommand.comando.c_para = false;
+            sharedCommand.comando.j_sp_velocidade = 2;
+        }
+
+        {
+            std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+            robotState.estado.e_automatico = true;
+        }
+
+        if (ciclo % 10 == 0)
+        {
+            std::lock_guard<std::mutex> trava(coutMutex);
+            std::cout << "ComandoNavegacao: automatico=1 sp_velocidade=2"
+                      << std::endl;
+        }
+
+        std::this_thread::sleep_until(proximaExecucao);
+    }
+}

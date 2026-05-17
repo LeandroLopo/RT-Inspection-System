@@ -888,17 +888,17 @@ g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
 - [x] Usar `mutex` para proteger buffer.
 - [x] Usar `condition_variable` para esperar dado novo.
 - [x] Implementar media movel simples.
-- [ ] Simular anomalia no LIDAR.
-- [ ] Detectar falha por variacao brusca.
+- [x] Simular anomalia no LIDAR.
+- [x] Detectar falha por variacao brusca.
 - [ ] Criar thread `InspecaoCamera` como tarefa azul, mesmo que ainda sem evento real.
 - [ ] Criar `CameraEvent` como item opcional ou preparacao para a Etapa 2.
 - [x] Criar `SurfaceBuffer`.
 - [x] Gerar `SurfacePoint`.
 - [x] Implementar `ColetorDados`.
 - [ ] Gravar arquivo CSV.
-- [ ] Implementar distancia percorrida usando encoder.
-- [ ] Implementar comando de navegacao simulado.
-- [ ] Implementar controle proporcional inicial.
+- [x] Implementar distancia percorrida usando encoder.
+- [x] Implementar comando de navegacao simulado.
+- [x] Implementar controle proporcional inicial.
 - [ ] Montar figura da arquitetura.
 - [ ] Escrever relatorio parcial.
 

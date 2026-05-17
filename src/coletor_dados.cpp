@@ -12,10 +12,14 @@
 #include "buffers.hpp"
 #include "log.hpp"
 
+#include <fstream>
 #include <iostream>
 
 void ColetorDados(SurfaceBuffer &surfaceBuffer)
 {
+    std::ofstream arquivo("surface_points.csv");
+    arquivo << "timestamp,x,y,confianca\n";
+    
     while (true)
     {
         SurfacePoint ponto;
@@ -44,5 +48,10 @@ void ColetorDados(SurfaceBuffer &surfaceBuffer)
                       << " confianca=" << ponto.confianca
                       << std::endl;
         }
+
+        arquivo << ponto.timestamp << ","
+                << ponto.x << ","
+                << ponto.y << ","
+                << ponto.confianca << "\n";
     }
 }

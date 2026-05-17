@@ -1,5 +1,6 @@
 #pragma once
 #include "buffers.hpp"
+#include "shared_state.hpp"
 
 // Declare aqui as funcoes das tarefas paralelas do sistema.
 // A implementacao de cada tarefa deve ficar em seu respectivo arquivo .cpp dentro de src/.
@@ -14,6 +15,9 @@
 // - InspecaoCamera: aguarda falha e simula processamento pesado de camera.
 
 
-void SimulacaoSensores(SensorBuffer &buffer);
-void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer);
+void SimulacaoSensores(SensorBuffer &sensorBuffer, EncoderBuffer &encoderBuffer);
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData);
 void ColetorDados(SurfaceBuffer &surfaceBuffer);
+void DistanciaPercorrida(EncoderBuffer &encoderBuffer, SharedRobotState &robotState);
+void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState);
+void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData);

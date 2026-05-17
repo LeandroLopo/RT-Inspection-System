@@ -24,11 +24,17 @@ struct SensorBuffer {
     bool finalizado = false;
 };
 
+struct EncoderBuffer {
+    std::queue<EncoderData> fila_encoder;
+    std::mutex mutex_encoder;
+    std::condition_variable encoder_disponivel_var;
+    bool finalizado = false;
+};
+
 struct SurfaceBuffer {
     std::queue<SurfacePoint> fila_superficie;
     std::mutex mutex_superficie; 
     std::condition_variable surface_point_var; 
     bool finalizado = false;
 };
-
 

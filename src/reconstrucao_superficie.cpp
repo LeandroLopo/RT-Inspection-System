@@ -12,12 +12,17 @@
 // fazer o fluxo SensorBuffer -> ReconstrucaoSuperficie -> SurfaceBuffer funcionar.
 #include "buffers.hpp"
 #include "log.hpp"
+#include "shared_state.hpp"
+#include <cmath>
 #include <iostream>
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer) {
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData) {
     const int tamanhoJanela = 3;
+    const double limiteFalha = 10.0;
     std::queue<int> ultimasLeituras;
     int somaLeituras = 0;
+    bool primeiraMedia = true;
+    double mediaAnterior = 0.0;
 
       while (true)
     {
@@ -54,9 +59,48 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer) 
         SurfacePoint ponto;
 
         ponto.timestamp = leitura.timestamp;
-        ponto.x = 0.0;
+        {
+            std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+            ponto.x = robotState.estado.posicao_x;
+        }
         ponto.y = media_movel;
         ponto.confianca = 1.0;
+
+        if (!primeiraMedia)
+        {
+            const double variacao = std::abs(media_movel - mediaAnterior);
+
+            bool jaEmInspecao = false;
+            {
+                std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+                jaEmInspecao = robotState.estado.e_inspecao;
+            }
+
+            if (variacao > limiteFalha && !jaEmInspecao)
+            {
+                {
+                    std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+                    robotState.estado.e_inspecao = true;
+                }
+
+                {
+                    std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
+                    sharedActuatorData.atuadores.o_liga_camera = true;
+                }
+
+                {
+                    std::lock_guard<std::mutex> trava(coutMutex);
+                    std::cout << "Falha detectada: x=" << ponto.x
+                              << " y=" << ponto.y
+                              << " variacao=" << variacao
+                              << " limite=" << limiteFalha
+                              << std::endl;
+                }
+            }
+        }
+
+        mediaAnterior = media_movel;
+        primeiraMedia = false;
 
         {
             std::lock_guard<std::mutex> trava (surfaceBuffer.mutex_superficie);
@@ -67,10 +111,10 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer) 
 
         {
             std::lock_guard<std::mutex> trava(coutMutex);
-            std::cout << "Reconstrucao: encoder=" << leitura.i_encoder
-                      << " lidar=" << leitura.i_lidar
-                      << " media_movel=" << media_movel
-                      << " timestamp=" << leitura.timestamp
+            std::cout << "Reconstrução: encoder =" << leitura.i_encoder
+                      << " lidar =" << leitura.i_lidar
+                      << " media_móvel =" << media_movel
+                      << " timestamp =" << leitura.timestamp
                       << std::endl;
         }
 
