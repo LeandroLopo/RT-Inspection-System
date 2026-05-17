@@ -16,13 +16,14 @@
 #include <cmath>
 #include <iostream>
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData) {
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, CameraEvent &cameraEvent) {
     const int tamanhoJanela = 3;
     const double limiteFalha = 10.0;
     std::queue<int> ultimasLeituras;
     int somaLeituras = 0;
     bool primeiraMedia = true;
     double mediaAnterior = 0.0;
+    bool falhaJaDetectada = false;
 
       while (true)
     {
@@ -70,14 +71,10 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
         {
             const double variacao = std::abs(media_movel - mediaAnterior);
 
-            bool jaEmInspecao = false;
+            if (variacao > limiteFalha && !falhaJaDetectada)
             {
-                std::lock_guard<std::mutex> trava(robotState.mutex_estado);
-                jaEmInspecao = robotState.estado.e_inspecao;
-            }
+                falhaJaDetectada = true;
 
-            if (variacao > limiteFalha && !jaEmInspecao)
-            {
                 {
                     std::lock_guard<std::mutex> trava(robotState.mutex_estado);
                     robotState.estado.e_inspecao = true;
@@ -87,6 +84,16 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
                     std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
                     sharedActuatorData.atuadores.o_liga_camera = true;
                 }
+
+                {
+                    std::lock_guard<std::mutex> trava(cameraEvent.mutex_camera);
+                    cameraEvent.falha_detectada = true;
+                    cameraEvent.timestamp = ponto.timestamp;
+                    cameraEvent.x = ponto.x;
+                    cameraEvent.y = ponto.y;
+                }
+
+                cameraEvent.camera_event_var.notify_one();
 
                 {
                     std::lock_guard<std::mutex> trava(coutMutex);
@@ -111,10 +118,10 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
 
         {
             std::lock_guard<std::mutex> trava(coutMutex);
-            std::cout << "Reconstrução: encoder =" << leitura.i_encoder
-                      << " lidar =" << leitura.i_lidar
-                      << " media_móvel =" << media_movel
-                      << " timestamp =" << leitura.timestamp
+            std::cout << "Reconstrucao: encoder=" << leitura.i_encoder
+                      << " lidar=" << leitura.i_lidar
+                      << " media_movel=" << media_movel
+                      << " timestamp=" << leitura.timestamp
                       << std::endl;
         }
 
@@ -125,4 +132,10 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, 
         surfaceBuffer.finalizado = true;
     }
     surfaceBuffer.surface_point_var.notify_one();
+
+    {
+        std::lock_guard<std::mutex> trava(cameraEvent.mutex_camera);
+        cameraEvent.finalizado = true;
+    }
+    cameraEvent.camera_event_var.notify_one();
 }

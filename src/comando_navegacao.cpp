@@ -15,14 +15,22 @@
 #include <iostream>
 #include <thread>
 
-void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState)
+void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedSystemControl &systemControl)
 {
-    const int totalCiclos = 70;
     auto proximaExecucao = std::chrono::steady_clock::now();
+    int ciclo = 0;
 
-    for (int ciclo = 0; ciclo < totalCiclos; ciclo++)
+    while (true)
     {
         proximaExecucao += std::chrono::milliseconds(80);
+
+        {
+            std::lock_guard<std::mutex> trava(systemControl.mutex_sistema);
+            if (!systemControl.sistema_rodando)
+            {
+                break;
+            }
+        }
 
         {
             std::lock_guard<std::mutex> trava(sharedCommand.mutex_comando);
@@ -46,6 +54,7 @@ void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState
                       << std::endl;
         }
 
+        ciclo++;
         std::this_thread::sleep_until(proximaExecucao);
     }
 }

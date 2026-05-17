@@ -16,8 +16,9 @@
 
 
 void SimulacaoSensores(SensorBuffer &sensorBuffer, EncoderBuffer &encoderBuffer);
-void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData);
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, CameraEvent &cameraEvent);
 void ColetorDados(SurfaceBuffer &surfaceBuffer);
 void DistanciaPercorrida(EncoderBuffer &encoderBuffer, SharedRobotState &robotState);
-void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState);
-void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData);
+void ComandoNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedSystemControl &systemControl);
+void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, SharedSystemControl &systemControl);
+void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData);

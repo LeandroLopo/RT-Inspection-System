@@ -1,0 +1,669 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, shapes.symbols, fit, calc}
+
+\geometry{left=3cm,right=2cm,top=3cm,bottom=2cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\definecolor{codegray}{RGB}{245,245,245}
+\definecolor{codeborder}{RGB}{210,210,210}
+\definecolor{codecomment}{RGB}{90,120,90}
+\definecolor{codekeyword}{RGB}{0,70,140}
+\definecolor{codestring}{RGB}{150,60,40}
+
+\lstdefinestyle{cppstyle}{
+    language=C++,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment},
+    stringstyle=\color{codestring},
+    backgroundcolor=\color{codegray},
+    frame=single,
+    rulecolor=\color{codeborder},
+    numbers=left,
+    numberstyle=\tiny,
+    breaklines=true,
+    tabsize=4,
+    showstringspaces=false,
+    captionpos=b,
+    literate=
+        {á}{{\'a}}1 {à}{{\`a}}1 {ã}{{\~a}}1 {â}{{\^a}}1
+        {Á}{{\'A}}1 {À}{{\`A}}1 {Ã}{{\~A}}1 {Â}{{\^A}}1
+        {é}{{\'e}}1 {ê}{{\^e}}1 {É}{{\'E}}1 {Ê}{{\^E}}1
+        {í}{{\'i}}1 {Í}{{\'I}}1
+        {ó}{{\'o}}1 {õ}{{\~o}}1 {ô}{{\^o}}1
+        {Ó}{{\'O}}1 {Õ}{{\~O}}1 {Ô}{{\^O}}1
+        {ú}{{\'u}}1 {Ú}{{\'U}}1
+        {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1
+}
+
+\lstdefinestyle{textstyle}{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{codegray},
+    frame=single,
+    rulecolor=\color{codeborder},
+    numbers=none,
+    breaklines=true,
+    tabsize=4,
+    showstringspaces=false,
+    literate=
+        {á}{{\'a}}1 {à}{{\`a}}1 {ã}{{\~a}}1 {â}{{\^a}}1
+        {Á}{{\'A}}1 {À}{{\`A}}1 {Ã}{{\~A}}1 {Â}{{\^A}}1
+        {é}{{\'e}}1 {ê}{{\^e}}1 {É}{{\'E}}1 {Ê}{{\^E}}1
+        {í}{{\'i}}1 {Í}{{\'I}}1
+        {ó}{{\'o}}1 {õ}{{\~o}}1 {ô}{{\^o}}1
+        {Ó}{{\'O}}1 {Õ}{{\~O}}1 {Ô}{{\^O}}1
+        {ú}{{\'u}}1 {Ú}{{\'U}}1
+        {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1
+}
+
+\title{Sistema de Inspeção Automática de Túneis\\Relatório da Etapa 1}
+\author{
+    Nome do Integrante 1 -- Matrícula 000000\\
+    Nome do Integrante 2 -- Matrícula 000000\\
+    Nome do Integrante 3 -- Matrícula 000000
+}
+\date{Automação em Tempo Real -- 2026/1}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Large Universidade Federal de Minas Gerais\par}
+    \vspace{0.5cm}
+    {\large Automação em Tempo Real\par}
+    \vspace{2cm}
+    {\Huge\bfseries Sistema de Inspeção Automática de Túneis\par}
+    \vspace{0.5cm}
+    {\Large Relatório da Etapa 1\par}
+    \vspace{2cm}
+
+    \begin{tabular}{ll}
+        Integrante 1: & Nome completo -- Matrícula 000000 \\
+        Integrante 2: & Nome completo -- Matrícula 000000 \\
+        Integrante 3: & Nome completo -- Matrícula 000000 \\
+    \end{tabular}
+
+    \vfill
+    Professor: Leandro Freitas\par
+    \vspace{0.5cm}
+    Belo Horizonte\par
+    \today
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Introdução}
+
+A inspeção periódica de túneis e estruturas civis é uma atividade importante para a segurança pública. Métodos manuais de inspeção podem ser lentos, caros e perigosos, principalmente quando envolvem ambientes de difícil acesso ou risco estrutural. Nesse contexto, o uso de robôs autônomos permite coletar dados de sensores em tempo real e reduzir a exposição de operadores humanos.
+
+O projeto consiste em desenvolver um sistema de inspeção automática de túneis em um cenário simplificado em duas dimensões. O robô se desloca horizontalmente pelo túnel e mede a distância vertical até o teto usando um sensor LIDAR. A partir dessas medições, o sistema reconstrói o perfil da superfície e detecta anomalias, como buracos ou saliências. Quando uma variação brusca é detectada, o sistema reduz a velocidade de navegação e aciona uma tarefa de inspeção detalhada por câmera.
+
+Os objetivos desta primeira etapa são:
+
+\begin{itemize}
+    \item definir a arquitetura completa do sistema;
+    \item implementar as tarefas internas do robô como threads em C++;
+    \item implementar buffers compartilhados entre tarefas;
+    \item utilizar mecanismos de sincronização, como mutexes e variáveis de condição;
+    \item realizar testes preliminares de troca de dados entre tarefas;
+    \item documentar a arquitetura e os mecanismos de sincronização utilizados.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        scale=0.95,
+        tunnel/.style={draw, thick, rounded corners=2pt},
+        robot/.style={draw, thick, fill=gray!20, minimum width=1.6cm, minimum height=0.6cm},
+        sensor/.style={->, thick, green!60!black},
+        alert/.style={draw, thick, fill=red!15, rounded corners=2pt, align=center},
+        axis/.style={->, thick}
+    ]
+        \draw[tunnel, fill=brown!10] (0,0) -- (0,4) -- (2.2,4) .. controls (2.5,3.2) and (3.2,3.2) .. (3.5,4) -- (6.2,4) .. controls (6.5,4.7) and (7.4,4.7) .. (7.7,4) -- (10,4) -- (10,0) -- cycle;
+        \draw[thick] (0,0) -- (10,0);
+
+        \node[robot] (r) at (5,0.45) {Robô};
+        \draw[sensor] (5,0.8) -- (5,4.0) node[midway,right] {LIDAR};
+        \draw[axis] (0.8,-0.5) -- (9.3,-0.5) node[right] {$x$};
+        \draw[axis] (0.8,-0.5) -- (0.8,4.4) node[above] {$y$};
+
+        \node[alert] at (2.9,4.6) {Buraco\\detectado};
+        \node[alert] at (7.0,5.2) {Saliência\\detectada};
+
+        \draw[blue, thick] (1.2,-1.2) -- (2.4,-1.2) -- (2.7,-1.8) -- (3.2,-1.8) -- (3.5,-1.2) -- (6.0,-1.2) -- (6.4,-0.7) -- (7.3,-0.7) -- (7.7,-1.2) -- (9.0,-1.2);
+        \node at (5,-2.1) {Perfil reconstruído do teto a partir das medições};
+    \end{tikzpicture}
+    \caption{Ilustração própria do problema tratado: robô inspecionando o teto de um túnel em vista lateral 2D.}
+    \label{fig:introducao}
+\end{figure}
+
+\section{Proposta de Arquitetura}
+
+Na Etapa 1 foi adotada uma arquitetura multitarefa em processo único. As tarefas internas do robô, correspondentes aos blocos de controle embarcado, foram implementadas como threads C++ dentro do processo principal. A comunicação entre essas tarefas ocorre por memória compartilhada, com buffers protegidos por \texttt{std::mutex} e \texttt{std::condition\_variable}.
+
+Essa decisão é adequada para a primeira etapa porque permite demonstrar diretamente os conceitos de concorrência, região crítica, produtor-consumidor e sincronização. A comunicação via IPC/MQTT, bem como as interfaces gráficas de simulação e operação remota, ficam planejadas para a Etapa 2.
+
+\subsection{Diagrama da Arquitetura}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}[
+        node distance=1.0cm and 1.2cm,
+        task/.style={draw, rounded corners=2pt, fill=blue!15, minimum width=3.0cm, minimum height=0.8cm, align=center},
+        buffer/.style={draw, cylinder, shape border rotate=90, aspect=0.28, fill=gray!15, minimum height=1.0cm, minimum width=1.2cm, align=center},
+        state/.style={draw, rounded corners=2pt, fill=orange!20, minimum width=3.0cm, minimum height=0.8cm, align=center},
+        output/.style={draw, rounded corners=2pt, fill=green!15, minimum width=2.6cm, minimum height=0.8cm, align=center},
+        arrow/.style={-{Latex[length=3mm]}, thick},
+        event/.style={-{Latex[length=3mm]}, thick, red},
+        shared/.style={-{Latex[length=3mm]}, thick, orange!80!black}
+    ]
+        \node[task] (sim) {SimulacaoSensores\\thread de teste};
+        \node[buffer, right=of sim, yshift=1.1cm] (sensorbuf) {SensorBuffer\\mutex + condvar};
+        \node[buffer, right=of sim, yshift=-1.1cm] (encoderbuf) {EncoderBuffer\\mutex + condvar};
+
+        \node[task, right=of sensorbuf] (rec) {ReconstrucaoSuperficie\\thread};
+        \node[task, right=of encoderbuf] (dist) {DistanciaPercorrida\\thread};
+
+        \node[state, below=of rec] (robotstate) {SharedRobotState\\posicao, velocidade, estados\\mutex};
+
+        \node[buffer, right=of rec] (surfacebuf) {SurfaceBuffer\\mutex + condvar};
+        \node[task, right=of surfacebuf] (coletor) {ColetorDados\\thread};
+        \node[output, right=of coletor] (csv) {surface\_points.csv};
+
+        \node[buffer, above=of surfacebuf] (camevent) {CameraEvent\\mutex + condvar};
+        \node[task, right=of camevent] (cam) {InspecaoCamera\\thread por evento};
+
+        \node[task, below=2.0cm of sim] (cmd) {ComandoNavegacao\\thread 80 ms};
+        \node[state, right=of cmd] (command) {SharedCommand\\mutex};
+        \node[task, right=of command] (ctrl) {ControleNavegacao\\thread 80 ms};
+        \node[state, right=of ctrl] (act) {SharedActuatorData\\mutex};
+
+        \draw[arrow] (sim) -- (sensorbuf);
+        \draw[arrow] (sim) -- (encoderbuf);
+        \draw[arrow] (sensorbuf) -- (rec);
+        \draw[arrow] (encoderbuf) -- (dist);
+        \draw[shared] (dist) -- (robotstate);
+        \draw[shared] (robotstate) -- (rec);
+        \draw[arrow] (rec) -- (surfacebuf);
+        \draw[arrow] (surfacebuf) -- (coletor);
+        \draw[arrow] (coletor) -- (csv);
+        \draw[event] (rec) -- (camevent);
+        \draw[event] (camevent) -- (cam);
+        \draw[shared] (rec) -- (act);
+        \draw[shared] (cam) -- (robotstate);
+        \draw[shared] (cam) -- (act);
+        \draw[arrow] (cmd) -- (command);
+        \draw[arrow] (command) -- (ctrl);
+        \draw[shared] (robotstate) -- (ctrl);
+        \draw[arrow] (ctrl) -- (act);
+    \end{tikzpicture}
+    }
+    \caption{Arquitetura detalhada da Etapa 1, com threads, buffers, estados compartilhados e mecanismos de sincronização.}
+    \label{fig:arquitetura}
+\end{figure}
+
+\subsection{Tarefas Implementadas}
+
+\begin{longtable}{p{4cm}p{4cm}p{6cm}}
+\toprule
+\textbf{Tarefa} & \textbf{Tipo} & \textbf{Responsabilidade} \\
+\midrule
+\endhead
+\texttt{SimulacaoSensores} & Thread C++ de teste & Gera dados simulados de LIDAR e encoder para testar os buffers da Etapa 1. \\
+\texttt{ReconstrucaoSuperficie} & Thread C++ & Consome leituras de LIDAR, aplica média móvel, gera pontos de superfície e detecta anomalias. \\
+\texttt{DistanciaPercorrida} & Thread C++ & Consome o encoder e calcula a posição horizontal do robô. \\
+\texttt{ColetorDados} & Thread C++ & Consome pontos reconstruídos, calcula confiança online e grava os dados em CSV. \\
+\texttt{ComandoNavegacao} & Thread C++ cíclica & Simula comando de operação remota na Etapa 1, configurando modo automático e setpoint. \\
+\texttt{ControleNavegacao} & Thread C++ cíclica & Aplica controle proporcional simples e gera aceleração. \\
+\texttt{InspecaoCamera} & Thread C++ por evento & Aguarda sinal de falha e executa processamento pesado usando CPU. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Buffers e Estados Compartilhados}
+
+Os buffers implementam o padrão produtor-consumidor. Cada buffer possui uma fila, um mutex, uma variável de condição e uma flag de finalização.
+
+\begin{longtable}{p{4cm}p{5cm}p{5cm}}
+\toprule
+\textbf{Estrutura} & \textbf{Fluxo} & \textbf{Sincronização} \\
+\midrule
+\endhead
+\texttt{SensorBuffer} & \texttt{SimulacaoSensores -> ReconstrucaoSuperficie} & \texttt{mutex\_sensor} e \texttt{dado\_disponivel\_var}. \\
+\texttt{EncoderBuffer} & \texttt{SimulacaoSensores -> DistanciaPercorrida} & \texttt{mutex\_encoder} e \texttt{encoder\_disponivel\_var}. \\
+\texttt{SurfaceBuffer} & \texttt{ReconstrucaoSuperficie -> ColetorDados} & \texttt{mutex\_superficie} e \texttt{surface\_point\_var}. \\
+\texttt{CameraEvent} & \texttt{ReconstrucaoSuperficie -> InspecaoCamera} & \texttt{mutex\_camera} e \texttt{camera\_event\_var}. \\
+\bottomrule
+\end{longtable}
+
+Além dos buffers, foram utilizados estados compartilhados protegidos por mutex:
+
+\begin{itemize}
+    \item \texttt{SharedRobotState}: armazena posição, velocidade, modo automático e estado de inspeção.
+    \item \texttt{SharedCommand}: armazena comandos simulados para a Etapa 1.
+    \item \texttt{SharedActuatorData}: armazena aceleração e comando de câmera.
+    \item \texttt{SharedSystemControl}: controla o encerramento das tarefas cíclicas.
+\end{itemize}
+
+\subsection{Mecanismos de Sincronização}
+
+O \texttt{std::mutex} é usado para proteger regiões críticas, como inserção e remoção de dados em filas ou leitura e escrita em estados compartilhados. A regra usada no código foi manter o mutex travado apenas durante o acesso ao dado compartilhado, copiando o valor para uma variável local e realizando o processamento fora da região crítica.
+
+A \texttt{std::condition\_variable} é usada para evitar espera ocupada. As tarefas consumidoras ficam bloqueadas até que uma tarefa produtora insira um novo dado no buffer e chame \texttt{notify\_one()}. Essa estratégia reduz uso desnecessário de CPU e evita laços de polling.
+
+\section{Implementação Desenvolvida}
+
+Esta seção apresenta os principais trechos de código do sistema e a justificativa das decisões tomadas em cada parte da implementação. Os trechos foram escolhidos por representarem os mecanismos centrais do trabalho: definição dos dados, comunicação por buffers, sincronização, reconstrução da superfície, detecção de falhas, controle de navegação e acionamento da câmera.
+
+\subsection{Tipos de Dados}
+
+O primeiro passo da implementação foi definir estruturas simples para representar as mensagens trocadas entre as tarefas. Essa escolha evita passar vários parâmetros soltos entre threads e deixa explícito qual informação circula em cada buffer. \texttt{SensorData} representa a leitura combinada de LIDAR e encoder, \texttt{EncoderData} separa o fluxo usado pela tarefa de distância, e \texttt{SurfacePoint} representa o ponto reconstruído do teto.
+
+\begin{lstlisting}[style=cppstyle]
+struct SensorData {
+    bool i_encoder;
+    int i_lidar;
+    double timestamp;
+};
+
+struct EncoderData {
+    bool i_encoder;
+    double timestamp;
+};
+
+struct SurfacePoint {
+    double timestamp;
+    double x;
+    double y;
+    double confianca;
+};
+\end{lstlisting}
+
+Separar \texttt{EncoderData} de \texttt{SensorData} foi importante para evitar que duas tarefas consumidoras retirassem dados da mesma fila. A reconstrução consome o fluxo de sensores, enquanto a distância percorrida consome o fluxo específico do encoder.
+
+\subsection{Buffers Sincronizados}
+
+Os buffers foram implementados seguindo o padrão produtor-consumidor. Cada buffer possui uma fila, um mutex, uma variável de condição e uma flag de finalização. Essa estrutura foi escolhida porque permite que uma tarefa produza dados em seu próprio ritmo e outra tarefa consuma esses dados sem espera ocupada.
+
+\begin{lstlisting}[style=cppstyle]
+struct SensorBuffer {
+    std::queue<SensorData> fila_sensor;
+    std::mutex mutex_sensor;
+    std::condition_variable dado_disponivel_var;
+    bool finalizado = false;
+};
+
+struct SurfaceBuffer {
+    std::queue<SurfacePoint> fila_superficie;
+    std::mutex mutex_superficie;
+    std::condition_variable surface_point_var;
+    bool finalizado = false;
+};
+\end{lstlisting}
+
+O \texttt{mutex} protege o acesso à fila. A \texttt{condition\_variable} permite que a tarefa consumidora durma enquanto não há dados disponíveis. A flag \texttt{finalizado} evita que a consumidora fique bloqueada indefinidamente ao final da simulação.
+
+\subsection{Simulação dos Sensores}
+
+A tarefa de simulação foi usada na Etapa 1 para substituir temporariamente a interface gráfica de simulação que será implementada na Etapa 2. Ela gera leituras falsas, alterna o encoder e injeta uma anomalia no LIDAR para testar a detecção de falhas.
+
+\begin{lstlisting}[style=cppstyle]
+for (int i = 0; i < 10; i++) {
+    estado_encoder = !estado_encoder;
+
+    SensorData leitura;
+    leitura.i_encoder = estado_encoder;
+    leitura.i_lidar = (i == 5) ? 140 : 100 + i;
+    leitura.timestamp = TempoAtualSegundos();
+
+    EncoderData encoder{leitura.i_encoder, leitura.timestamp};
+
+    {
+        std::lock_guard<std::mutex> trava(encoderBuffer.mutex_encoder);
+        encoderBuffer.fila_encoder.push(encoder);
+    }
+    encoderBuffer.encoder_disponivel_var.notify_one();
+
+    {
+        std::lock_guard<std::mutex> trava(sensorBuffer.mutex_sensor);
+        sensorBuffer.fila_sensor.push(leitura);
+    }
+    sensorBuffer.dado_disponivel_var.notify_one();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+\end{lstlisting}
+
+A leitura anômala \texttt{i\_lidar = 140} foi colocada para simular uma variação brusca no teto. O uso de \texttt{sleep\_for} aqui representa o intervalo entre leituras de sensores simulados. Isso é diferente da tarefa de câmera, que não deve ser simulada apenas com \texttt{sleep}, pois o enunciado exige processamento pesado.
+
+\subsection{Consumo com Variável de Condição}
+
+As tarefas consumidoras usam \texttt{condition\_variable} para aguardar dados. Essa decisão evita que a thread execute um laço verificando a fila repetidamente, o que desperdiçaria CPU.
+
+\begin{lstlisting}[style=cppstyle]
+SensorData leitura;
+
+{
+    std::unique_lock<std::mutex> trava(buffer.mutex_sensor);
+
+    buffer.dado_disponivel_var.wait(trava, [&buffer] {
+        return !buffer.fila_sensor.empty() || buffer.finalizado;
+    });
+
+    if (buffer.fila_sensor.empty() && buffer.finalizado) {
+        break;
+    }
+
+    leitura = buffer.fila_sensor.front();
+    buffer.fila_sensor.pop();
+}
+\end{lstlisting}
+
+O processamento é feito fora da região crítica. Assim, o mutex fica travado apenas pelo tempo necessário para retirar o dado da fila, reduzindo contenção entre threads.
+
+\subsection{Reconstrução da Superfície}
+
+A reconstrução aplica uma média móvel de três amostras no LIDAR. Essa técnica foi escolhida por ser simples, online e suficiente para reduzir ruídos iniciais sem exigir armazenamento de todo o histórico.
+
+\begin{lstlisting}[style=cppstyle]
+ultimasLeituras.push(leitura.i_lidar);
+somaLeituras += leitura.i_lidar;
+
+if (ultimasLeituras.size() > tamanhoJanela) {
+    somaLeituras -= ultimasLeituras.front();
+    ultimasLeituras.pop();
+}
+
+double media_movel =
+    static_cast<double>(somaLeituras) / ultimasLeituras.size();
+
+SurfacePoint ponto;
+ponto.timestamp = leitura.timestamp;
+
+{
+    std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+    ponto.x = robotState.estado.posicao_x;
+}
+
+ponto.y = media_movel;
+ponto.confianca = 1.0;
+\end{lstlisting}
+
+A coordenada \texttt{x} é lida de \texttt{SharedRobotState}, atualizado pela tarefa de distância percorrida. Dessa forma, o ponto reconstruído combina posição horizontal e distância vertical filtrada.
+
+\subsection{Detecção de Falha}
+
+A falha é detectada comparando a média móvel atual com a média anterior. A regra foi escolhida por ser simples de testar e por representar a ideia central do problema: buracos e saliências aparecem como variações bruscas no perfil do teto.
+
+\begin{lstlisting}[style=cppstyle]
+const double variacao = std::abs(media_movel - mediaAnterior);
+
+if (variacao > limiteFalha && !falhaJaDetectada) {
+    falhaJaDetectada = true;
+
+    {
+        std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+        robotState.estado.e_inspecao = true;
+    }
+
+    {
+        std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
+        sharedActuatorData.atuadores.o_liga_camera = true;
+    }
+
+    {
+        std::lock_guard<std::mutex> trava(cameraEvent.mutex_camera);
+        cameraEvent.falha_detectada = true;
+        cameraEvent.timestamp = ponto.timestamp;
+        cameraEvent.x = ponto.x;
+        cameraEvent.y = ponto.y;
+    }
+
+    cameraEvent.camera_event_var.notify_one();
+}
+\end{lstlisting}
+
+Quando a falha é encontrada, a reconstrução atualiza o estado do robô, liga a câmera e sinaliza o evento que acorda a tarefa \texttt{InspecaoCamera}. A flag \texttt{falhaJaDetectada} evita múltiplos disparos para a mesma anomalia simulada.
+
+\subsection{Distância Percorrida}
+
+A tarefa \texttt{DistanciaPercorrida} implementa a regra do enunciado: o encoder troca de estado a cada metro percorrido. Sempre que o valor atual do encoder difere do anterior, a posição horizontal é incrementada.
+
+\begin{lstlisting}[style=cppstyle]
+if (leitura.i_encoder != encoderAnterior) {
+    double posicaoAtualizada = 0.0;
+
+    {
+        std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+        robotState.estado.posicao_x += 1.0;
+        posicaoAtualizada = robotState.estado.posicao_x;
+    }
+
+    encoderAnterior = leitura.i_encoder;
+}
+\end{lstlisting}
+
+O estado do robô foi centralizado em \texttt{SharedRobotState} para que a posição possa ser usada por outras tarefas, como a reconstrução da superfície.
+
+\subsection{Coletor de Dados}
+
+O coletor recebe os pontos reconstruídos e grava o arquivo CSV. Além disso, calcula uma confiança simples com base na quantidade de pontos próximos já observados. Essa escolha atende ao requisito de análise online, mantendo a implementação simples para a Etapa 1.
+
+\begin{lstlisting}[style=cppstyle]
+int pontosProximos = 1;
+
+for (const SurfacePoint &anterior : historico) {
+    const bool proximoEmX = std::abs(anterior.x - ponto.x) <= 2.0;
+    const bool proximoEmY = std::abs(anterior.y - ponto.y) <= 15.0;
+
+    if (proximoEmX && proximoEmY) {
+        pontosProximos++;
+    }
+}
+
+ponto.confianca = std::min(1.0, pontosProximos / 5.0);
+historico.push_back(ponto);
+
+arquivo << ponto.timestamp << ","
+        << ponto.x << ","
+        << ponto.y << ","
+        << ponto.confianca << "\n";
+\end{lstlisting}
+
+O CSV permite verificar o perfil reconstruído e serve como evidência objetiva dos testes realizados.
+
+\subsection{Controle de Navegação}
+
+O controle de navegação foi implementado inicialmente como controlador proporcional. Essa escolha é suficiente para demonstrar a interação entre comando, estado do robô e atuadores, sem introduzir a complexidade completa de um PID na Etapa 1.
+
+\begin{lstlisting}[style=cppstyle]
+const double setpointVelocidade =
+    emInspecao ? std::min(comando.j_sp_velocidade, 1)
+               : comando.j_sp_velocidade;
+
+const double erro = setpointVelocidade - velocidadeAtual;
+const int aceleracao =
+    static_cast<int>(std::clamp(kp * erro, -100.0, 100.0));
+
+{
+    std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
+    sharedActuatorData.atuadores.o_aceleracao = aceleracao;
+    sharedActuatorData.atuadores.o_liga_camera = emInspecao;
+}
+\end{lstlisting}
+
+Quando o robô entra em inspeção, o setpoint é limitado para reduzir a velocidade. Essa decisão acompanha o comportamento pedido no enunciado: ao detectar falha, o robô deve navegar mais devagar e acionar a câmera.
+
+\subsection{Inspeção por Câmera}
+
+A tarefa de câmera é acionada por evento. Ao acordar, ela executa um laço computacional com funções matemáticas, simulando processamento pesado de imagem. Essa escolha foi feita porque o enunciado especifica que essa tarefa deve usar o processador e não apenas dormir.
+
+\begin{lstlisting}[style=cppstyle]
+cameraEvent.camera_event_var.wait(trava, [&cameraEvent] {
+    return cameraEvent.falha_detectada || cameraEvent.finalizado;
+});
+
+volatile double resultado = 0.0;
+for (int i = 0; i < 8000000; i++) {
+    resultado += std::sin(i * 0.001) * std::cos(i * 0.0005);
+}
+
+{
+    std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
+    sharedActuatorData.atuadores.o_liga_camera = false;
+}
+\end{lstlisting}
+
+O uso de evento evita que a câmera execute continuamente. Ela permanece bloqueada e só consome CPU quando uma falha é detectada.
+
+\subsection{Criação das Threads}
+
+O programa principal instancia todos os buffers e estados compartilhados, cria as threads e aguarda sua finalização. Essa organização deixa o \texttt{main} responsável apenas pela montagem do sistema, mantendo a lógica de cada tarefa em seu próprio arquivo.
+
+\begin{lstlisting}[style=cppstyle]
+SensorBuffer sensorBuffer;
+EncoderBuffer encoderBuffer;
+SurfaceBuffer surfaceBuffer;
+CameraEvent cameraEvent;
+SharedRobotState robotState;
+SharedCommand sharedCommand;
+SharedActuatorData sharedActuatorData;
+SharedSystemControl systemControl;
+
+std::thread comando(ComandoNavegacao,
+    std::ref(sharedCommand), std::ref(robotState), std::ref(systemControl));
+
+std::thread controle(ControleNavegacao,
+    std::ref(sharedCommand), std::ref(robotState),
+    std::ref(sharedActuatorData), std::ref(systemControl));
+
+std::thread simulacao(SimulacaoSensores,
+    std::ref(sensorBuffer), std::ref(encoderBuffer));
+
+std::thread distancia(DistanciaPercorrida,
+    std::ref(encoderBuffer), std::ref(robotState));
+
+std::thread reconstrucao(ReconstrucaoSuperficie,
+    std::ref(sensorBuffer), std::ref(surfaceBuffer),
+    std::ref(robotState), std::ref(sharedActuatorData), std::ref(cameraEvent));
+
+std::thread coletor(ColetorDados, std::ref(surfaceBuffer));
+std::thread camera(InspecaoCamera,
+    std::ref(cameraEvent), std::ref(robotState), std::ref(sharedActuatorData));
+\end{lstlisting}
+
+\subsection{Compilação}
+
+A compilação foi automatizada por um \texttt{Makefile}. Essa escolha reduz erros na apresentação, facilita os testes e garante que todos os arquivos da pasta \texttt{src/} sejam compilados com as mesmas opções.
+
+\begin{lstlisting}[style=textstyle]
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -pthread -Iinclude
+BUILD_DIR := build
+TARGET := $(BUILD_DIR)/rt_inspection
+SRCS := $(wildcard src/*.cpp)
+
+all: $(TARGET)
+
+$(TARGET): $(SRCS)
+	mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+\end{lstlisting}
+
+\section{Resultados de Testes Preliminares}
+
+Os testes foram executados com os seguintes comandos:
+
+\begin{lstlisting}[style=textstyle]
+make clean
+make
+make run
+\end{lstlisting}
+
+\subsection{Teste 1: Troca de Dados entre Simulação e Reconstrução}
+
+O primeiro teste verificou se a tarefa \texttt{SimulacaoSensores} produz leituras de sensores e se a tarefa \texttt{ReconstrucaoSuperficie} consome essas leituras corretamente. O resultado esperado é a impressão de leituras com o valor filtrado por média móvel.
+
+\begin{lstlisting}[style=textstyle]
+Reconstrucao: encoder=1 lidar=100 media_movel=100 timestamp=...
+Reconstrucao: encoder=0 lidar=101 media_movel=100.5 timestamp=...
+Reconstrucao: encoder=1 lidar=102 media_movel=101 timestamp=...
+\end{lstlisting}
+
+Esse teste valida o funcionamento do \texttt{SensorBuffer}, do mutex associado e da variável de condição usada para acordar a reconstrução.
+
+\subsection{Teste 2: Cálculo de Distância Percorrida}
+
+O segundo teste verificou se o encoder é processado pela tarefa \texttt{DistanciaPercorrida}. Como o encoder simulado troca de estado a cada leitura, a posição horizontal é incrementada quando ocorre uma mudança.
+
+\begin{lstlisting}[style=textstyle]
+DistanciaPercorrida: x=1 m timestamp=...
+DistanciaPercorrida: x=2 m timestamp=...
+DistanciaPercorrida: x=3 m timestamp=...
+\end{lstlisting}
+
+Esse teste valida o \texttt{EncoderBuffer} e o uso de \texttt{SharedRobotState} para compartilhar a posição com outras tarefas.
+
+\subsection{Teste 3: Coletor de Dados e Arquivo CSV}
+
+O terceiro teste verificou se a reconstrução gera pontos de superfície e se o coletor consome esses pontos, calcula confiança e grava o arquivo \texttt{surface\_points.csv}.
+
+\begin{lstlisting}[style=textstyle]
+timestamp,x,y,confianca
+1.886e-06,0,100,0.2
+0.500124,0,100.5,0.4
+1.00024,2,101,0.6
+2.50063,4,115.667,0.8
+\end{lstlisting}
+
+Esse teste valida o \texttt{SurfaceBuffer}, o cálculo online de confiança e a gravação dos dados em disco.
+
+\subsection{Teste 4: Detecção de Falha e Acionamento da Câmera}
+
+O quarto teste inseriu uma anomalia no LIDAR simulado, configurando uma leitura com valor mais alto que o padrão. A reconstrução compara a média móvel atual com a média anterior e sinaliza falha quando a variação passa do limite configurado.
+
+\begin{lstlisting}[style=textstyle]
+Falha detectada: x=4 y=115.667 variacao=12.6667 limite=10
+InspecaoCamera: iniciando inspecao em x=4 y=115.667 timestamp=...
+InspecaoCamera: processamento finalizado resultado=...
+\end{lstlisting}
+
+Esse teste valida o \texttt{CameraEvent}, a sincronização por evento e o processamento pesado da tarefa de câmera. A câmera executa um laço com funções matemáticas, usando CPU de fato, e não apenas uma chamada de \texttt{sleep}.
+
+\subsection{Análise dos Testes}
+
+Durante os testes, as threads finalizaram corretamente, sem bloqueio observado. Os buffers possuem flags de finalização para evitar que consumidores fiquem bloqueados indefinidamente. As impressões no terminal são protegidas por um mutex global de log, evitando mensagens misturadas. A troca de dados entre tarefas ocorreu de forma coerente, com produção, consumo e encerramento ordenados.
+
+\section{Conclusão}
+
+Nesta etapa foi implementado o núcleo embarcado do sistema de inspeção automática de túneis. As principais tarefas foram modeladas como threads C++ dentro de um único processo. Foram implementados buffers sincronizados para comunicação entre tarefas, estados compartilhados protegidos por mutex, reconstrução do perfil do teto por média móvel, cálculo de distância percorrida pelo encoder, controle proporcional simples, detecção de falha por variação brusca e acionamento de inspeção por câmera via evento.
+
+Os testes preliminares indicam que a arquitetura implementada consegue trocar dados entre tarefas sem condições de corrida aparentes, sem bloqueios observados e com finalização controlada das threads. O sistema também gera um arquivo CSV com os pontos reconstruídos, permitindo verificar o perfil estimado do teto.
+
+Como próximos passos para a Etapa 2, devem ser implementadas as interfaces gráficas de simulação e operação remota, a comunicação entre processos via MQTT, a integração com um broker publisher/subscriber e uma análise mais detalhada de tempo de resposta e escalonabilidade das tarefas cíclicas.
+
+\end{document}

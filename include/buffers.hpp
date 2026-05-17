@@ -38,3 +38,12 @@ struct SurfaceBuffer {
     bool finalizado = false;
 };
 
+struct CameraEvent {
+    std::mutex mutex_camera;
+    std::condition_variable camera_event_var;
+    bool falha_detectada = false;
+    bool finalizado = false;
+    double timestamp = 0.0;
+    double x = 0.0;
+    double y = 0.0;
+};

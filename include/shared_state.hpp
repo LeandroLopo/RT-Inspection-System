@@ -29,3 +29,8 @@ struct SharedActuatorData {
     ActuatorData atuadores{0, false};
     std::mutex mutex_atuadores;
 };
+
+struct SharedSystemControl {
+    bool sistema_rodando = true;
+    std::mutex mutex_sistema;
+};

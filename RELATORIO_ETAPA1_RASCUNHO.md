@@ -129,6 +129,40 @@ SurfaceBuffer = buffer compartilhado
 ColetorDados = consumidora
 ```
 
+Exemplo 3:
+
+```text
+SimulacaoSensores -> EncoderBuffer -> DistanciaPercorrida
+```
+
+Nesse fluxo, a simulacao publica leituras do encoder em um buffer proprio. A tarefa `DistanciaPercorrida` consome essas leituras e atualiza a posicao horizontal do robo em `SharedRobotState`.
+
+## Buffers e Estados Compartilhados Implementados
+
+Buffers com fila, mutex, variavel de condicao e flag de finalizacao:
+
+- `SensorBuffer`: transporta `SensorData` da simulacao para a reconstrucao.
+- `EncoderBuffer`: transporta `EncoderData` da simulacao para o calculo de distancia.
+- `SurfaceBuffer`: transporta `SurfacePoint` da reconstrucao para o coletor.
+- `CameraEvent`: sinaliza falha da reconstrucao para a camera.
+
+Estados compartilhados protegidos por mutex:
+
+- `SharedRobotState`: posicao, velocidade, modo automatico e estado de inspecao.
+- `SharedCommand`: comando simulado da operacao remota na Etapa 1.
+- `SharedActuatorData`: aceleracao e acionamento da camera.
+- `SharedSystemControl`: flag de encerramento das tarefas ciclicas.
+
+## Tarefas Implementadas
+
+- `SimulacaoSensores`: gera leituras falsas de LIDAR e encoder.
+- `ReconstrucaoSuperficie`: aplica media movel no LIDAR, gera pontos de superficie e detecta falhas.
+- `DistanciaPercorrida`: calcula `posicao_x` a partir da troca de estado do encoder.
+- `ColetorDados`: consome pontos reconstruidos, calcula confianca online e grava CSV.
+- `ComandoNavegacao`: gera comando simulado de modo automatico e setpoint de velocidade.
+- `ControleNavegacao`: aplica controle proporcional simples e gera aceleracao.
+- `InspecaoCamera`: aguarda evento de falha e executa processamento pesado usando CPU.
+
 ## Mecanismos de Sincronizacao
 
 ### Mutex
@@ -183,6 +217,42 @@ Conforme o enunciado, os seguintes itens nao precisam ser implementados na Etapa
 
 Esses elementos serao implementados na Etapa 2, quando o sistema passar a ter processos externos comunicando com o nucleo C++.
 
+## Teste Executado
+
+Comandos:
+
+```bash
+make clean
+make
+make run
+```
+
+Resultado observado:
+
+- o sistema executa as threads principais;
+- a simulacao gera uma anomalia no LIDAR;
+- a reconstrucao detecta a falha por variacao brusca da media movel;
+- a camera e acionada por evento e executa processamento pesado;
+- o coletor grava `surface_points.csv`.
+
+Exemplo de saida:
+
+```text
+Falha detectada: x=4 y=115.667 variacao=12.6667 limite=10
+InspecaoCamera: iniciando inspecao em x=4 y=115.667 timestamp=...
+InspecaoCamera: processamento finalizado resultado=...
+```
+
+Exemplo do CSV:
+
+```csv
+timestamp,x,y,confianca
+1.886e-06,0,100,0.2
+0.500124,0,100.5,0.4
+1.00024,2,101,0.6
+2.50063,4,115.667,0.8
+```
+
 ## Texto Pronto Para Usar no Relatorio
 
 ```text
@@ -193,13 +263,13 @@ Essa escolha reduz a complexidade da primeira etapa e permite demonstrar diretam
 
 ## Pontos Para Conferir Antes de Fechar a Etapa 1
 
-- [ ] Incluir figura da arquitetura detalhada.
-- [ ] Explicar quais tarefas viraram threads.
-- [ ] Explicar quais buffers foram implementados.
-- [ ] Mostrar o fluxo `SimulacaoSensores -> SensorBuffer -> ReconstrucaoSuperficie`.
-- [ ] Mostrar o fluxo `ReconstrucaoSuperficie -> SurfaceBuffer -> ColetorDados`.
-- [ ] Explicar uso de `mutex`.
-- [ ] Explicar uso de `condition_variable`.
-- [ ] Incluir comando de compilacao.
-- [ ] Incluir exemplo de saida do teste.
-- [ ] Informar que MQTT, IPC e GUIs ficam para a Etapa 2.
+- [x] Incluir figura da arquitetura detalhada.
+- [x] Explicar quais tarefas viraram threads.
+- [x] Explicar quais buffers foram implementados.
+- [x] Mostrar o fluxo `SimulacaoSensores -> SensorBuffer -> ReconstrucaoSuperficie`.
+- [x] Mostrar o fluxo `ReconstrucaoSuperficie -> SurfaceBuffer -> ColetorDados`.
+- [x] Explicar uso de `mutex`.
+- [x] Explicar uso de `condition_variable`.
+- [x] Incluir comando de compilacao.
+- [x] Incluir exemplo de saida do teste.
+- [x] Informar que MQTT, IPC e GUIs ficam para a Etapa 2.

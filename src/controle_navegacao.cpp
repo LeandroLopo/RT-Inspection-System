@@ -17,15 +17,23 @@
 #include <iostream>
 #include <thread>
 
-void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData)
+void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, SharedSystemControl &systemControl)
 {
-    const int totalCiclos = 70;
     const double kp = 25.0;
     auto proximaExecucao = std::chrono::steady_clock::now();
+    int ciclo = 0;
 
-    for (int ciclo = 0; ciclo < totalCiclos; ciclo++)
+    while (true)
     {
         proximaExecucao += std::chrono::milliseconds(80);
+
+        {
+            std::lock_guard<std::mutex> trava(systemControl.mutex_sistema);
+            if (!systemControl.sistema_rodando)
+            {
+                break;
+            }
+        }
 
         RobotCommand comando;
         double velocidadeAtual = 0.0;
@@ -68,6 +76,7 @@ void ControleNavegacao(SharedCommand &sharedCommand, SharedRobotState &robotStat
                       << std::endl;
         }
 
+        ciclo++;
         std::this_thread::sleep_until(proximaExecucao);
     }
 }

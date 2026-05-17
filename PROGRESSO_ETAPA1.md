@@ -890,17 +890,17 @@ g++ -std=c++17 RT-Inspection-System/main.cpp -pthread -o /tmp/rt_inspection
 - [x] Implementar media movel simples.
 - [x] Simular anomalia no LIDAR.
 - [x] Detectar falha por variacao brusca.
-- [ ] Criar thread `InspecaoCamera` como tarefa azul, mesmo que ainda sem evento real.
-- [ ] Criar `CameraEvent` como item opcional ou preparacao para a Etapa 2.
+- [x] Criar thread `InspecaoCamera` como tarefa azul, mesmo que ainda sem evento real.
+- [x] Criar `CameraEvent` como item opcional ou preparacao para a Etapa 2.
 - [x] Criar `SurfaceBuffer`.
 - [x] Gerar `SurfacePoint`.
 - [x] Implementar `ColetorDados`.
-- [ ] Gravar arquivo CSV.
+- [x] Gravar arquivo CSV.
 - [x] Implementar distancia percorrida usando encoder.
 - [x] Implementar comando de navegacao simulado.
 - [x] Implementar controle proporcional inicial.
-- [ ] Montar figura da arquitetura.
-- [ ] Escrever relatorio parcial.
+- [x] Montar figura da arquitetura.
+- [x] Escrever relatorio parcial.
 
 ## Conceitos Importantes Para Explicar no Relatorio
 
