@@ -1,4 +1,8 @@
 #pragma once
+#include "types.hpp"
+#include <queue>
+#include <mutex> 
+#include <condition_variable>
 
 // Defina aqui os buffers compartilhados entre tarefas.
 // Cada buffer deve conter:
@@ -12,3 +16,11 @@
 // - EncoderBuffer: SimulacaoSensores -> DistanciaPercorrida.
 // - SurfaceBuffer: ReconstrucaoSuperficie -> ColetorDados.
 // - CameraEvent: ReconstrucaoSuperficie -> InspecaoCamera.
+
+struct SensorBuffer {
+    std::queue<SensorData> fila_sensor;
+    std::mutex mutex_sensor; 
+    std::condition_variable dado_disponivel_var; 
+    bool finalizado = false;
+};
+

@@ -6,3 +6,5 @@
 // - double TempoAtualSegundos();
 //
 // Essa funcao deve usar std::chrono::steady_clock para medir o tempo desde o inicio do programa.
+
+double TempoAtualSegundos();
