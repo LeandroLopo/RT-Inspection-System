@@ -15,4 +15,5 @@
 
 
 void SimulacaoSensores(SensorBuffer &buffer);
-void ReconstrucaoSuperficie(SensorBuffer &buffer);
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer);
+void ColetorDados(SurfaceBuffer &surfaceBuffer);

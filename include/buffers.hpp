@@ -24,3 +24,11 @@ struct SensorBuffer {
     bool finalizado = false;
 };
 
+struct SurfaceBuffer {
+    std::queue<SurfacePoint> fila_superficie;
+    std::mutex mutex_superficie; 
+    std::condition_variable surface_point_var; 
+    bool finalizado = false;
+};
+
+

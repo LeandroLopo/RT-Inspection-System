@@ -17,13 +17,16 @@
 
 int main()
 {
-    SensorBuffer buffer;
+    SensorBuffer sensorBuffer;
+    SurfaceBuffer surfaceBuffer;
 
-    std::thread simulacao(SimulacaoSensores, std::ref(buffer));
-    std::thread reconstrucao(ReconstrucaoSuperficie, std::ref(buffer));
+    std::thread simulacao(SimulacaoSensores, std::ref(sensorBuffer));
+    std::thread reconstrucao(ReconstrucaoSuperficie, std::ref(sensorBuffer), std::ref(surfaceBuffer));
+    std::thread coletor(ColetorDados, std::ref(surfaceBuffer));
 
     simulacao.join();
     reconstrucao.join();
+    coletor.join();
 
     return 0;
 }

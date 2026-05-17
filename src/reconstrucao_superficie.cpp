@@ -11,9 +11,10 @@
 // Primeiro objetivo:
 // fazer o fluxo SensorBuffer -> ReconstrucaoSuperficie -> SurfaceBuffer funcionar.
 #include "buffers.hpp"
+#include "log.hpp"
 #include <iostream>
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer) {
+void ReconstrucaoSuperficie(SensorBuffer &buffer, SurfaceBuffer &surfaceBuffer) {
     const int tamanhoJanela = 3;
     std::queue<int> ultimasLeituras;
     int somaLeituras = 0;
@@ -47,13 +48,37 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer) {
             ultimasLeituras.pop();
         }
 
-        double mediaMovel =
+        double media_movel =
             static_cast<double>(somaLeituras) / ultimasLeituras.size();
 
-        std::cout << "Reconstrucao: encoder=" << leitura.i_encoder
-                  << " lidar=" << leitura.i_lidar
-                  << " media_movel=" << mediaMovel
-                  << " timestamp=" << leitura.timestamp
-                  << std::endl;
+        SurfacePoint ponto;
+
+        ponto.timestamp = leitura.timestamp;
+        ponto.x = 0.0;
+        ponto.y = media_movel;
+        ponto.confianca = 1.0;
+
+        {
+            std::lock_guard<std::mutex> trava (surfaceBuffer.mutex_superficie);
+            surfaceBuffer.fila_superficie.push (ponto); //inserção do dado de sensor na fila
+        }
+
+        surfaceBuffer.surface_point_var.notify_one(); //evita espera ocupada e acorda a thread só quando há dado novo.
+
+        {
+            std::lock_guard<std::mutex> trava(coutMutex);
+            std::cout << "Reconstrucao: encoder=" << leitura.i_encoder
+                      << " lidar=" << leitura.i_lidar
+                      << " media_movel=" << media_movel
+                      << " timestamp=" << leitura.timestamp
+                      << std::endl;
+        }
+
     }
+
+    {
+        std::lock_guard<std::mutex> trava(surfaceBuffer.mutex_superficie);
+        surfaceBuffer.finalizado = true;
+    }
+    surfaceBuffer.surface_point_var.notify_one();
 }

@@ -12,6 +12,7 @@
 #include "buffers.hpp"
 #include "time_utils.hpp"
 #include "types.hpp"
+#include <chrono>
 #include <thread>
 
 void SimulacaoSensores (SensorBuffer &buffer){

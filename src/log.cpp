@@ -5,3 +5,7 @@
 //
 // Solucao simples:
 // proteger toda escrita no terminal com um std::mutex.
+
+#include "log.hpp"
+
+std::mutex coutMutex;
