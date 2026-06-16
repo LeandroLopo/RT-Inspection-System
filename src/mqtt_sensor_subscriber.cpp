@@ -1,13 +1,13 @@
 #include "buffers.hpp"
 #include "log.hpp"
 #include "mqtt_topics.hpp"
+#include "shared_state.hpp"
 #include "types.hpp"
 
 #include <mosquitto.h>
 #include <nlohmann/json.hpp>
 
 #include <atomic>
-#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -18,6 +18,7 @@ namespace {
 struct MqttSensorContext {
     SensorBuffer *sensorBuffer = nullptr;
     EncoderBuffer *encoderBuffer = nullptr;
+    SharedRobotState *robotState = nullptr;
     std::atomic<bool> finalizado{false};
 };
 
@@ -56,14 +57,10 @@ void AoReceberMensagem(struct mosquitto *,
     try {
         const json mensagem = json::parse(payload);
 
-        /*
-         * A simulação envia esta mensagem ao terminar:
-         * {"finalizado": true}
-         */
         if (mensagem.value("finalizado", false)) {
             {
                 std::lock_guard<std::mutex> trava(coutMutex);
-                std::cout << "MQTT: encerramento dos sensores recebido."
+                std::cout << "MQTT: finalizacao dos sensores recebida."
                           << std::endl;
             }
 
@@ -79,6 +76,14 @@ void AoReceberMensagem(struct mosquitto *,
         EncoderData encoder;
         encoder.i_encoder = leitura.i_encoder;
         encoder.timestamp = leitura.timestamp;
+
+        const double velocidadeMedida =
+            mensagem.value("velocidade", 0.0);
+
+        {
+            std::lock_guard<std::mutex> trava(contexto->robotState->mutex_estado);
+            contexto->robotState->estado.velocidade = velocidadeMedida;
+        }
 
         {
             std::lock_guard<std::mutex> trava(contexto->sensorBuffer->mutex_sensor);
@@ -97,6 +102,7 @@ void AoReceberMensagem(struct mosquitto *,
             std::cout << "MQTT sensor recebido: encoder="
                       << leitura.i_encoder
                       << " lidar=" << leitura.i_lidar
+                      << " velocidade=" << velocidadeMedida
                       << " timestamp=" << leitura.timestamp
                       << std::endl;
         }
@@ -113,21 +119,21 @@ void AoReceberMensagem(struct mosquitto *,
 } // namespace
 
 void RecebeSensoresMqtt(SensorBuffer &sensorBuffer,
-                         EncoderBuffer &encoderBuffer)
+                         EncoderBuffer &encoderBuffer,
+                         SharedRobotState &robotState)
 {
     MqttSensorContext contexto;
     contexto.sensorBuffer = &sensorBuffer;
     contexto.encoderBuffer = &encoderBuffer;
-
-    mosquitto_lib_init();
+    contexto.robotState = &robotState;
 
     struct mosquitto *cliente =
         mosquitto_new("rt_inspection_core_sensors", true, &contexto);
 
     if (cliente == nullptr) {
-        std::cerr << "Erro: nao foi possivel criar cliente MQTT." << std::endl;
+        std::cerr << "Erro: nao foi possivel criar cliente MQTT de sensores."
+                  << std::endl;
         FinalizaBuffers(contexto);
-        mosquitto_lib_cleanup();
         return;
     }
 
@@ -137,13 +143,12 @@ void RecebeSensoresMqtt(SensorBuffer &sensorBuffer,
         mosquitto_connect(cliente, "localhost", 1883, 60);
 
     if (resultadoConexao != MOSQ_ERR_SUCCESS) {
-        std::cerr << "Erro ao conectar no broker MQTT: "
+        std::cerr << "Erro ao conectar receptor de sensores no MQTT: "
                   << mosquitto_strerror(resultadoConexao)
                   << std::endl;
 
         FinalizaBuffers(contexto);
         mosquitto_destroy(cliente);
-        mosquitto_lib_cleanup();
         return;
     }
 
@@ -151,14 +156,13 @@ void RecebeSensoresMqtt(SensorBuffer &sensorBuffer,
         mosquitto_subscribe(cliente, nullptr, MqttTopics::SENSORES, 0);
 
     if (resultadoInscricao != MOSQ_ERR_SUCCESS) {
-        std::cerr << "Erro ao assinar topico MQTT: "
+        std::cerr << "Erro ao assinar topico MQTT de sensores: "
                   << mosquitto_strerror(resultadoInscricao)
                   << std::endl;
 
         FinalizaBuffers(contexto);
         mosquitto_disconnect(cliente);
         mosquitto_destroy(cliente);
-        mosquitto_lib_cleanup();
         return;
     }
 
@@ -173,7 +177,7 @@ void RecebeSensoresMqtt(SensorBuffer &sensorBuffer,
         const int resultadoLoop = mosquitto_loop(cliente, 100, 1);
 
         if (resultadoLoop != MOSQ_ERR_SUCCESS) {
-            std::cerr << "Erro no loop MQTT: "
+            std::cerr << "Erro no loop MQTT de sensores: "
                       << mosquitto_strerror(resultadoLoop)
                       << std::endl;
 
@@ -184,5 +188,4 @@ void RecebeSensoresMqtt(SensorBuffer &sensorBuffer,
 
     mosquitto_disconnect(cliente);
     mosquitto_destroy(cliente);
-    mosquitto_lib_cleanup();
 }

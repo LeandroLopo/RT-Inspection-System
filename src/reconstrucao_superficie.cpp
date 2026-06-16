@@ -6,30 +6,42 @@
 #include <iostream>
 #include <queue>
 
-void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer, SurfaceBuffer &surfaceBuffer, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData, CameraEvent &cameraEvent)
+void ReconstrucaoSuperficie(SensorBuffer &buffer,
+                             PositionBuffer &positionBuffer,
+                             SurfaceBuffer &surfaceBuffer,
+                             SurfaceBuffer &remoteSurfaceBuffer,
+                             SharedRobotState &robotState,
+                             SharedActuatorData &sharedActuatorData,
+                             SharedSystemParameters &systemParameters,
+                             CameraEvent &cameraEvent)
 {
-    const int tamanhoJanela = 3;
-    const double limiteFalha = 10.0;
+    const std::size_t tamanhoJanela = 3;
+
     std::queue<int> ultimasLeituras;
+
     int somaLeituras = 0;
+
     bool primeiraMedia = true;
     double mediaAnterior = 0.0;
+
     bool falhaJaDetectada = false;
 
-    while (true)
-    {
+    while (true) {
         SensorData leitura;
         PositionData posicao;
 
         {
             std::unique_lock<std::mutex> trava(buffer.mutex_sensor);
 
-            buffer.dado_disponivel_var.wait(trava, [&buffer] {
-                return !buffer.fila_sensor.empty() || buffer.finalizado;
-            });
+            buffer.dado_disponivel_var.wait(
+                trava,
+                [&buffer] {
+                    return !buffer.fila_sensor.empty()
+                        || buffer.finalizado;
+                }
+            );
 
-            if (buffer.fila_sensor.empty() && buffer.finalizado)
-            {
+            if (buffer.fila_sensor.empty() && buffer.finalizado) {
                 break;
             }
 
@@ -38,14 +50,22 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer
         }
 
         {
-            std::unique_lock<std::mutex> trava(positionBuffer.mutex_posicao);
+            std::unique_lock<std::mutex> trava(
+                positionBuffer.mutex_posicao
+            );
 
-            positionBuffer.posicao_disponivel_var.wait(trava, [&positionBuffer] {
-                return !positionBuffer.fila_posicao.empty() || positionBuffer.finalizado;
-            });
+            positionBuffer.posicao_disponivel_var.wait(
+                trava,
+                [&positionBuffer] {
+                    return !positionBuffer.fila_posicao.empty()
+                        || positionBuffer.finalizado;
+                }
+            );
 
-            if (positionBuffer.fila_posicao.empty() && positionBuffer.finalizado)
-            {
+            if (
+                positionBuffer.fila_posicao.empty()
+                && positionBuffer.finalizado
+            ) {
                 break;
             }
 
@@ -56,42 +76,60 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer
         ultimasLeituras.push(leitura.i_lidar);
         somaLeituras += leitura.i_lidar;
 
-        if (ultimasLeituras.size() > tamanhoJanela)
-        {
+        if (ultimasLeituras.size() > tamanhoJanela) {
             somaLeituras -= ultimasLeituras.front();
             ultimasLeituras.pop();
         }
 
-        double media_movel =
-            static_cast<double>(somaLeituras) / ultimasLeituras.size();
+        const double mediaMovel =
+            static_cast<double>(somaLeituras)
+            / static_cast<double>(ultimasLeituras.size());
 
         SurfacePoint ponto;
 
         ponto.timestamp = leitura.timestamp;
         ponto.x = posicao.x;
-        ponto.y = media_movel;
+        ponto.y = mediaMovel;
         ponto.confianca = 1.0;
 
-        if (!primeiraMedia)
-        {
-            const double variacao = std::abs(media_movel - mediaAnterior);
+        double limiteFalha;
 
-            if (variacao > limiteFalha && !falhaJaDetectada)
-            {
+        {
+            std::lock_guard<std::mutex> trava(
+                systemParameters.mutex_parametros
+            );
+
+            limiteFalha = systemParameters.limite_falha;
+        }
+
+        if (!primeiraMedia) {
+            const double variacao =
+                std::abs(mediaMovel - mediaAnterior);
+
+            if (variacao > limiteFalha && !falhaJaDetectada) {
                 falhaJaDetectada = true;
 
                 {
-                    std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+                    std::lock_guard<std::mutex> trava(
+                        robotState.mutex_estado
+                    );
+
                     robotState.estado.e_inspecao = true;
                 }
 
                 {
-                    std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
+                    std::lock_guard<std::mutex> trava(
+                        sharedActuatorData.mutex_atuadores
+                    );
+
                     sharedActuatorData.atuadores.o_liga_camera = true;
                 }
 
                 {
-                    std::lock_guard<std::mutex> trava(cameraEvent.mutex_camera);
+                    std::lock_guard<std::mutex> trava(
+                        cameraEvent.mutex_camera
+                    );
+
                     cameraEvent.falha_detectada = true;
                     cameraEvent.timestamp = ponto.timestamp;
                     cameraEvent.x = ponto.x;
@@ -102,7 +140,9 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer
 
                 {
                     std::lock_guard<std::mutex> trava(coutMutex);
-                    std::cout << "Falha detectada: x=" << ponto.x
+
+                    std::cout << "Falha detectada: x="
+                              << ponto.x
                               << " y=" << ponto.y
                               << " variacao=" << variacao
                               << " limite=" << limiteFalha
@@ -111,21 +151,37 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer
             }
         }
 
-        mediaAnterior = media_movel;
+        mediaAnterior = mediaMovel;
         primeiraMedia = false;
 
         {
-            std::lock_guard<std::mutex> trava(surfaceBuffer.mutex_superficie);
+            std::lock_guard<std::mutex> trava(
+                surfaceBuffer.mutex_superficie
+            );
+
             surfaceBuffer.fila_superficie.push(ponto);
         }
 
         surfaceBuffer.surface_point_var.notify_one();
 
         {
+            std::lock_guard<std::mutex> trava(
+                remoteSurfaceBuffer.mutex_superficie
+            );
+
+            remoteSurfaceBuffer.fila_superficie.push(ponto);
+        }
+
+        remoteSurfaceBuffer.surface_point_var.notify_one();
+
+        {
             std::lock_guard<std::mutex> trava(coutMutex);
-            std::cout << "Reconstrucao: encoder=" << leitura.i_encoder
+
+            std::cout << "Reconstrucao: encoder="
+                      << leitura.i_encoder
                       << " lidar=" << leitura.i_lidar
-                      << " media_movel=" << media_movel
+                      << " media_movel=" << mediaMovel
+                      << " limite_falha=" << limiteFalha
                       << " timestamp=" << leitura.timestamp
                       << std::endl;
         }
@@ -135,11 +191,23 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer, PositionBuffer &positionBuffer
         std::lock_guard<std::mutex> trava(surfaceBuffer.mutex_superficie);
         surfaceBuffer.finalizado = true;
     }
-    surfaceBuffer.surface_point_var.notify_one();
+
+    surfaceBuffer.surface_point_var.notify_all();
+
+    {
+        std::lock_guard<std::mutex> trava(
+            remoteSurfaceBuffer.mutex_superficie
+        );
+
+        remoteSurfaceBuffer.finalizado = true;
+    }
+
+    remoteSurfaceBuffer.surface_point_var.notify_all();
 
     {
         std::lock_guard<std::mutex> trava(cameraEvent.mutex_camera);
         cameraEvent.finalizado = true;
     }
-    cameraEvent.camera_event_var.notify_one();
+
+    cameraEvent.camera_event_var.notify_all();
 }

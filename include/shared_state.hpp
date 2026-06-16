@@ -19,6 +19,11 @@ struct SharedActuatorData {
     std::mutex mutex_atuadores;
 };
 
+struct SharedSystemParameters {
+    double limite_falha = 10.0;
+    std::mutex mutex_parametros;
+};
+
 struct SharedSystemControl {
     bool sistema_rodando = true;
     std::mutex mutex_sistema;
