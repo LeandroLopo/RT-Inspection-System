@@ -1,0 +1,77 @@
+classDiagram
+    class SensorData {
+        bool i_encoder
+        int i_lidar
+        double timestamp
+    }
+
+    class EncoderData {
+        bool i_encoder
+        double timestamp
+    }
+
+    class PositionData {
+        double timestamp
+        double x
+    }
+
+    class SurfacePoint {
+        double timestamp
+        double x
+        double y
+        double confianca
+    }
+
+    class RobotCommand {
+        int j_sp_velocidade
+        bool c_automatico
+        bool c_man
+        bool c_direita
+        bool c_esquerda
+        bool c_para
+    }
+
+    class RobotState {
+        bool e_automatico
+        bool e_inspecao
+        double posicao_x
+        double velocidade
+    }
+
+    class ActuatorData {
+        int o_aceleracao
+        bool o_liga_camera
+    }
+
+    class SensorBuffer {
+        queue~SensorData~ fila_sensor
+        mutex mutex_sensor
+        condition_variable dado_disponivel_var
+        bool finalizado
+    }
+
+    class EncoderBuffer {
+        queue~EncoderData~ fila_encoder
+        mutex mutex_encoder
+        condition_variable encoder_disponivel_var
+        bool finalizado
+    }
+
+    class PositionBuffer {
+        queue~PositionData~ fila_posicao
+        mutex mutex_posicao
+        condition_variable posicao_disponivel_var
+        bool finalizado
+    }
+
+    class SurfaceBuffer {
+        queue~SurfacePoint~ fila_superficie
+        mutex mutex_superficie
+        condition_variable surface_point_var
+        bool finalizado
+    }
+
+    SensorBuffer --> SensorData
+    EncoderBuffer --> EncoderData
+    PositionBuffer --> PositionData
+    SurfaceBuffer --> SurfacePoint

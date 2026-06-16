@@ -1,0 +1,46 @@
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=2 integral=0.16 derivada=25 aceleracao=100 velocidade=0.1 inspecao=0
+Reconstrucao: encoder=1 lidar=100 media_movel=100 timestamp=1.467e-06
+Coletor: timestamp=1.467e-06 x=0 y=100 confianca=0.2
+DistanciaPercorrida: x=1 m timestamp=0.500108
+Reconstrucao: encoder=0 lidar=101 media_movel=100.5 timestamp=0.500108
+Coletor: timestamp=0.500108 x=1 y=100.5 confianca=0.4
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=1.525 integral=1.5272 derivada=-0.4875 aceleracao=38 velocidade=0.513 inspecao=0
+DistanciaPercorrida: x=2 m timestamp=1.00021
+Coletor: timestamp=1.00021 x=2 y=101 confianca=0.6
+Reconstrucao: encoder=1 lidar=102 media_movel=101 timestamp=1.00021
+DistanciaPercorrida: x=3 m timestamp=1.50033
+Reconstrucao: encoder=0 lidar=103 media_movel=102 timestamp=1.50033
+Coletor: timestamp=1.50033 x=3 y=102 confianca=0.6
+ControleNavegacao: erro=1.177 integral=2.58944 derivada=-0.4 aceleracao=31 velocidade=0.854 inspecao=0
+ComandoNavegacao: automatico=1 sp_velocidade=2
+DistanciaPercorrida: x=4 m timestamp=2.00046
+Reconstrucao: encoder=1 lidar=104 media_movel=103 timestamp=2.00046
+Coletor: timestamp=2.00046 x=4 y=103 confianca=0.6
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=0.891 integral=3.40152 derivada=-0.325 aceleracao=26 velocidade=1.135 inspecao=0
+DistanciaPercorrida: x=5 m timestamp=2.5006
+Falha detectada: x=5 y=115.667 variacao=12.6667 limite=10
+Reconstrucao: encoder=0 lidar=140 media_movel=115.667 timestamp=2.5006
+InspecaoCamera: iniciando inspecao em x=5 y=115.667 timestamp=2.5006
+Coletor: timestamp=2.5006 x=5 y=115.667 confianca=0.6
+InspecaoCamera: processamento finalizado resultado=1852.27
+DistanciaPercorrida: x=6 m timestamp=3.0007
+Reconstrucao: encoder=1 lidar=106 media_movel=116.667 timestamp=3.0007
+Coletor: timestamp=3.0007 x=6 y=116.667 confianca=0.6
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=0.696 integral=3.88128 derivada=-0.275 aceleracao=22 velocidade=1.326 inspecao=0
+DistanciaPercorrida: x=7 m timestamp=3.50079
+Reconstrucao: encoder=0 lidar=107 media_movel=117.667 timestamp=3.50079
+Coletor: timestamp=3.50079 x=7 y=117.667 confianca=0.6
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=0.498 integral=4.34816 derivada=-0.225 aceleracao=18 velocidade=1.52 inspecao=0
+DistanciaPercorrida: x=8 m timestamp=4.00088
+Reconstrucao: encoder=1 lidar=108 media_movel=107 timestamp=4.00088
+Coletor: timestamp=4.00088 x=8 y=107 confianca=0.6
+DistanciaPercorrida: x=9 m timestamp=4.50126
+Coletor: timestamp=4.50126 x=9 y=108 confianca=0.6
+Reconstrucao: encoder=0 lidar=109 media_movel=108 timestamp=4.50126
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=0.338 integral=4.674 derivada=-0.1875 aceleracao=14 velocidade=1.676 inspecao=0

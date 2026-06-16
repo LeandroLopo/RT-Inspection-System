@@ -1,0 +1,9 @@
+$ grep -E "ComandoNavegacao|ControleNavegacao" logs/saida_completa.txt | head -n 8
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=2 integral=0.16 derivada=25 aceleracao=100 velocidade=0.1 inspecao=0
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=1.525 integral=1.5272 derivada=-0.4875 aceleracao=38 velocidade=0.513 inspecao=0
+ControleNavegacao: erro=1.177 integral=2.58944 derivada=-0.4 aceleracao=31 velocidade=0.854 inspecao=0
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ComandoNavegacao: automatico=1 sp_velocidade=2
+ControleNavegacao: erro=0.891 integral=3.40152 derivada=-0.325 aceleracao=26 velocidade=1.135 inspecao=0

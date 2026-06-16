@@ -1,0 +1,45 @@
+%% Linha sólida: fluxo interno/saída local implementada na Etapa 1.
+%% Linha tracejada: comunicação MQTT planejada para a Etapa 2.
+%% Este diagrama é a visão geral compacta. O detalhamento das threads fica no diagrama nucleo_cpp_fluxo.mmd.
+
+flowchart TB
+    subgraph E2["Processos externos planejados para a Etapa 2"]
+        direction LR
+        Sim["Simulação gráfica<br/>processo externo"]
+        Broker["Broker MQTT<br/>processo externo"]
+        Remote["Operação remota<br/>processo externo"]
+    end
+
+    subgraph Core["Processo único C++: rt_inspection_core"]
+        direction TB
+        Threads["Threads internas do mesmo processo<br/>Comando, Controle PID, Distância,<br/>Reconstrução, Câmera e Coletor"]
+        Shared["Memória compartilhada interna<br/>Buffers + estados<br/>std::mutex + std::condition_variable"]
+        SimTest["SimulacaoSensores<br/>thread de teste da Etapa 1"]
+
+        SimTest --> Shared
+        Threads <--> Shared
+    end
+
+    CSV["surface_points.csv<br/>arquivo local<br/>Etapa 1"]
+
+    Sim <-. "sensores / atuadores" .-> Broker
+    Remote <-. "comandos / telemetria" .-> Broker
+    Broker <-. "MQTT / IPC planejado" .-> Core
+
+    Core --> CSV
+
+    classDef external fill:#d8f5d1,stroke:#333,stroke-width:1px,color:#000;
+    classDef broker fill:#eeeeee,stroke:#333,stroke-width:1px,color:#000;
+    classDef core fill:#dfe5ff,stroke:#333,stroke-width:1px,color:#000;
+    classDef thread fill:#e8e3ff,stroke:#333,stroke-width:1px,color:#000;
+    classDef shared fill:#fff1d6,stroke:#333,stroke-width:1px,color:#000;
+    classDef file fill:#d9f7d9,stroke:#333,stroke-width:1px,color:#000;
+    classDef legend fill:#ffffff,stroke:#777,stroke-width:1px,color:#000;
+
+    class Sim,Remote external;
+    class Broker broker;
+    class Core core;
+    class Threads,SimTest thread;
+    class Shared shared;
+    class CSV file;
+    class SolidA,SolidB,DashA,DashB legend;

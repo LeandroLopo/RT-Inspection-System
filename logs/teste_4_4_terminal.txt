@@ -1,0 +1,4 @@
+$ grep -E "Falha detectada|InspecaoCamera" logs/saida_completa.txt
+Falha detectada: x=5 y=115.667 variacao=12.6667 limite=10
+InspecaoCamera: iniciando inspecao em x=5 y=115.667 timestamp=2.5006
+InspecaoCamera: processamento finalizado resultado=1852.27

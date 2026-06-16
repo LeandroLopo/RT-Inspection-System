@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.7)  17 MAY 2026 19:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.7)  18 MAY 2026 21:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -585,6 +585,18 @@ File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
 zlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )))
+(/usr/share/texlive/texmf-dist/tex/latex/pdflscape/pdflscape.sty
+Package: pdflscape 2022-10-27 v0.13 Display of landscape pages in PDF
+
+(/usr/share/texlive/texmf-dist/tex/latex/pdflscape/pdflscape-nometadata.sty
+Package: pdflscape-nometadata 2022-10-28 v0.13 Display of landscape pages in PD
+F (HO)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/lscape.sty
+Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+))
 (/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryarrows.meta.
 code.tex
 File: pgflibraryarrows.meta.code.tex 2023-01-15 v3.1.10 (3.1.10)
@@ -621,7 +633,7 @@ File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
 zlibrarycalc.code.tex
 File: tikzlibrarycalc.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )
-Package hyperref Info: Option `colorlinks' set `true' on input line 24.
+Package hyperref Info: Option `colorlinks' set `true' on input line 25.
 
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
@@ -631,24 +643,24 @@ File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
 (./relatorio_etapa1.aux)
 \openout1 = `relatorio_etapa1.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 85.
-LaTeX Font Info:    ... okay on input line 85.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 99.
+LaTeX Font Info:    ... okay on input line 99.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -706,7 +718,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring ON on input line 85.
+Package hyperref Info: Link coloring ON on input line 99.
 
 (./relatorio_etapa1.out) (./relatorio_etapa1.out)
 \@outlinefile=\write4
@@ -714,132 +726,115 @@ Package hyperref Info: Link coloring ON on input line 85.
 
 \c@lstlisting=\count324
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 100.
+(Font)              <12> on input line 114.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 100.
+(Font)              <8> on input line 114.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 100.
+(Font)              <6> on input line 114.
  [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./relatorio_etapa1.toc)
 \tf@toc=\write5
 \openout5 = `relatorio_etapa1.toc'.
 
- [1] [1]
+ [1]
 LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 1
-67.
+69.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 224.
- [2]
-Underfull \hbox (badness 10000) in paragraph at lines 242--242
+<figuras/arquitetura_completa.png, id=163, 630.355pt x 905.3825pt>
+File: figuras/arquitetura_completa.png Graphic file (type png)
+<use figuras/arquitetura_completa.png>
+Package pdftex.def Info: figuras/arquitetura_completa.png  used on input line 1
+77.
+(pdftex.def)             Requested size: 332.72073pt x 477.88872pt.
+ [1] [2 <./figuras/arquitetura_completa.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 195--195
 []|\T1/cmr/m/n/12 MQTT:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--243
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
 []|\T1/cmr/m/n/12 MQTT:
  []
 
 
-Underfull \hbox (badness 7759) in paragraph at lines 243--244
+Underfull \hbox (badness 7759) in paragraph at lines 196--197
 []|\T1/cmr/m/n/12 Aceleração e co-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--244
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
 []|\T1/cmr/m/n/12 MQTT:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--245
+Underfull \hbox (badness 10000) in paragraph at lines 197--198
 []|\T1/cmr/m/n/12 Modo ma-nu-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 244--245
+Underfull \hbox (badness 10000) in paragraph at lines 197--198
 \T1/cmr/m/n/12 al/au-to-má-tico e
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 245--245
+Underfull \hbox (badness 10000) in paragraph at lines 198--198
 []|\T1/cmr/m/n/12 MQTT:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 246--246
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
 []|\T1/cmr/m/n/12 MQTT:
  []
 
 
-Underfull \hbox (badness 2828) in paragraph at lines 246--247
+Underfull \hbox (badness 2828) in paragraph at lines 199--200
 []|\T1/cmr/m/n/12 Pontos re-cons-truí-
  []
 
+<figuras/nucleo_cpp_fluxo.png, id=184, 2409.0pt x 522.95375pt>
+File: figuras/nucleo_cpp_fluxo.png Graphic file (type png)
+<use figuras/nucleo_cpp_fluxo.png>
+Package pdftex.def Info: figuras/nucleo_cpp_fluxo.png  used on input line 205.
+(pdftex.def)             Requested size: 455.2152pt x 98.81963pt.
 
-Underfull \hbox (badness 1845) in paragraph at lines 317--317
+Underfull \hbox (badness 1845) in paragraph at lines 217--217
 []|\T1/cmr/m/n/12 Thread C++ de
  []
 
 
-Underfull \hbox (badness 1521) in paragraph at lines 321--321
+Underfull \hbox (badness 1521) in paragraph at lines 221--221
 []|\T1/cmr/m/n/12 Thread C++ cí-
  []
 
 
-Underfull \hbox (badness 1521) in paragraph at lines 322--322
+Underfull \hbox (badness 1521) in paragraph at lines 222--222
 []|\T1/cmr/m/n/12 Thread C++ cí-
  []
 
 
-Underfull \hbox (badness 5147) in paragraph at lines 323--324
+Underfull \hbox (badness 5147) in paragraph at lines 223--224
 \T1/cmr/m/n/12 pro-ces-sa-mento pe-sado usando
  []
 
-[3]
-Underfull \hbox (badness 10000) in paragraph at lines 336--336
-[]|\T1/cmtt/m/n/12 SimulacaoSensores $\OMS/cmsy/m/n/12 !$
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 336--337
-[]|\T1/cmtt/m/n/12 mutex_sensor \T1/cmr/m/n/12 e
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 337--337
-[]|\T1/cmtt/m/n/12 SimulacaoSensores $\OMS/cmsy/m/n/12 !$
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 337--338
-[]|\T1/cmtt/m/n/12 mutex_encoder \T1/cmr/m/n/12 e
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 338--338
-[]|\T1/cmtt/m/n/12 DistanciaPercorrida $\OMS/cmsy/m/n/12 !$
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 338--339
-[]|\T1/cmtt/m/n/12 mutex_posicao \T1/cmr/m/n/12 e
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 339--340
-[]|\T1/cmtt/m/n/12 mutex_superficie \T1/cmr/m/n/12 e
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 340--341
-[]|\T1/cmtt/m/n/12 mutex_camera \T1/cmr/m/n/12 e
- []
-
-[4] (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+[3 <./figuras/nucleo_cpp_fluxo.png>] [4]
+<figuras/estruturas_dados_uml_2.png, id=200, 979.66pt x 415.5525pt>
+File: figuras/estruturas_dados_uml_2.png Graphic file (type png)
+<use figuras/estruturas_dados_uml_2.png>
+Package pdftex.def Info: figuras/estruturas_dados_uml_2.png  used on input line
+ 273.
+(pdftex.def)             Requested size: 414.20491pt x 175.69757pt.
+<figuras/estruturas_dados_uml_1.png, id=201, 1033.8625pt x 415.5525pt>
+File: figuras/estruturas_dados_uml_1.png Graphic file (type png)
+<use figuras/estruturas_dados_uml_1.png>
+Package pdftex.def Info: figuras/estruturas_dados_uml_1.png  used on input line
+ 280.
+(pdftex.def)             Requested size: 437.12198pt x 175.69757pt.
+ [5 <./figuras/estruturas_dados_uml_2.png>] (/usr/share/texlive/texmf-dist/tex/
+latex/listings/lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 )
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
@@ -849,9 +844,50 @@ File: lstlang1.sty 2023/02/27 1.9 listings language file
 File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
 )
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 368.
- [5] [6] [7]
-[8] [9] [10] [11] [12] [13] [14] (./relatorio_etapa1.aux)
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 288.
+ [6 <./figuras/estruturas_dados_uml_1.png>] [7] [8] [9] [10] [11] [12]
+<figuras/testes/terminal_completo.png, id=498, 1863.96375pt x 850.17625pt>
+File: figuras/testes/terminal_completo.png Graphic file (type png)
+<use figuras/testes/terminal_completo.png>
+Package pdftex.def Info: figuras/testes/terminal_completo.png  used on input li
+ne 654.
+(pdftex.def)             Requested size: 455.23882pt x 207.63988pt.
+ [13 <./figuras/testes/terminal_completo.png>]
+<figuras/testes/teste_4_1_terminal.png, id=525, 829.0975pt x 161.60374pt>
+File: figuras/testes/teste_4_1_terminal.png Graphic file (type png)
+<use figuras/testes/teste_4_1_terminal.png>
+Package pdftex.def Info: figuras/testes/teste_4_1_terminal.png  used on input l
+ine 666.
+(pdftex.def)             Requested size: 455.23334pt x 88.7319pt.
+<figuras/testes/teste_4_2_terminal.png, id=527, 829.0975pt x 161.60374pt>
+File: figuras/testes/teste_4_2_terminal.png Graphic file (type png)
+<use figuras/testes/teste_4_2_terminal.png>
+Package pdftex.def Info: figuras/testes/teste_4_2_terminal.png  used on input l
+ine 677.
+(pdftex.def)             Requested size: 455.23334pt x 88.7319pt.
+<figuras/testes/teste_4_3_terminal.png, id=529, 833.1125pt x 199.74625pt>
+File: figuras/testes/teste_4_3_terminal.png Graphic file (type png)
+<use figuras/testes/teste_4_3_terminal.png>
+Package pdftex.def Info: figuras/testes/teste_4_3_terminal.png  used on input l
+ine 688.
+(pdftex.def)             Requested size: 455.25134pt x 109.15062pt.
+ [14 <./figuras/testes/teste_4_1_terminal.png> <./figuras/testes/teste_4_2_term
+inal.png>]
+<figuras/testes/teste_4_4_terminal.png, id=540, 831.105pt x 182.6825pt>
+File: figuras/testes/teste_4_4_terminal.png Graphic file (type png)
+<use figuras/testes/teste_4_4_terminal.png>
+Package pdftex.def Info: figuras/testes/teste_4_4_terminal.png  used on input l
+ine 699.
+(pdftex.def)             Requested size: 455.24496pt x 100.0659pt.
+<figuras/testes/teste_4_5_terminal.png, id=542, 839.135pt x 353.32pt>
+File: figuras/testes/teste_4_5_terminal.png Graphic file (type png)
+<use figuras/testes/teste_4_5_terminal.png>
+Package pdftex.def Info: figuras/testes/teste_4_5_terminal.png  used on input l
+ine 710.
+(pdftex.def)             Requested size: 455.23883pt x 191.6795pt.
+ [15 <./figuras/testes/teste_4_3_terminal.png> <./figuras/testes/teste_4_4_term
+inal.png>] [16 <./figuras/testes/teste_4_5_terminal.png>] (./relatorio_etapa1.a
+ux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
@@ -860,31 +896,33 @@ Package rerunfilecheck Info: File `relatorio_etapa1.out' has not changed.
 (rerunfilecheck)             Checksum: DDD151B9480EE584108635CC75856C85;5491.
  ) 
 Here is how much of TeX's memory you used:
- 24945 strings out of 476162
- 461326 string characters out of 5794815
- 2178975 words of memory out of 5000000
- 46237 multiletter control sequences out of 15000+600000
- 569471 words of font info for 58 fonts, out of 8000000 for 9000
+ 24754 strings out of 476162
+ 459998 string characters out of 5794815
+ 2169975 words of memory out of 5000000
+ 46045 multiletter control sequences out of 15000+600000
+ 571324 words of font info for 61 fonts, out of 8000000 for 9000
  16 hyphenation exceptions out of 8191
- 84i,10n,87p,610b,2070s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,8n,87p,610b,2070s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt10
 00.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec
 /ecrm0600.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jkna
-ppen/ec/ecbx1440.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfo
-ur/jknappen/ec/ectt1200.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/
-pk/ljfour/jknappen/ec/tcrm1200.600pk> </home/leandrolopo/.texlive2023/texmf-var
-/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/leandrolopo/.texlive2023/te
-xmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </home/leandrolopo/.texlive
-2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </home/leandrolopo/.
-texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2488.600pk> </home/leandr
-olopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440.600pk> </home
-/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk>
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on relatorio_etapa1.pdf (16 pages, 213875 bytes).
+ppen/ec/tcrm1200.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfo
+ur/jknappen/ec/ectt0800.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/
+pk/ljfour/jknappen/ec/ecbx0800.600pk> </home/leandrolopo/.texlive2023/texmf-var
+/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </home/leandrolopo/.texlive2023/te
+xmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk> </home/leandrolopo/.texlive
+2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/leandrolopo/.
+texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </home/leandr
+olopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </home
+/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2488.600pk>
+ </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440
+.600pk> </home/leandrolopo/.texlive2023/texmf-var/fonts/pk/ljfour/jknappen/ec/e
+crm1728.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
+i12.pfb>
+Output written on relatorio_etapa1.pdf (18 pages, 745839 bytes).
 PDF statistics:
- 1049 PDF objects out of 1200 (max. 8388607)
- 621 compressed objects within 7 object streams
- 343 named destinations out of 1000 (max. 500000)
- 237 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1106 PDF objects out of 1200 (max. 8388607)
+ 626 compressed objects within 7 object streams
+ 331 named destinations out of 1000 (max. 500000)
+ 287 words of extra memory for PDF output out of 10000 (max. 10000000)
 

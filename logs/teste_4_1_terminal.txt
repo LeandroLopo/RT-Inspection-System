@@ -1,0 +1,7 @@
+]633;E;echo '$ grep "^Reconstrucao:" logs/saida_completa.txt | head -n 6';7fe7042b-df50-4a3b-8097-d55060236591]633;C$ grep "^Reconstrucao:" logs/saida_completa.txt | head -n 6
+Reconstrucao: encoder=1 lidar=100 media_movel=100 timestamp=1.467e-06
+Reconstrucao: encoder=0 lidar=101 media_movel=100.5 timestamp=0.500108
+Reconstrucao: encoder=1 lidar=102 media_movel=101 timestamp=1.00021
+Reconstrucao: encoder=0 lidar=103 media_movel=102 timestamp=1.50033
+Reconstrucao: encoder=1 lidar=104 media_movel=103 timestamp=2.00046
+Reconstrucao: encoder=0 lidar=140 media_movel=115.667 timestamp=2.5006

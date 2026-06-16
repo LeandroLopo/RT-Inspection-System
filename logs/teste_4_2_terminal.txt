@@ -1,0 +1,7 @@
+$ grep "^DistanciaPercorrida:" logs/saida_completa.txt | head -n 6
+DistanciaPercorrida: x=1 m timestamp=0.500108
+DistanciaPercorrida: x=2 m timestamp=1.00021
+DistanciaPercorrida: x=3 m timestamp=1.50033
+DistanciaPercorrida: x=4 m timestamp=2.00046
+DistanciaPercorrida: x=5 m timestamp=2.5006
+DistanciaPercorrida: x=6 m timestamp=3.0007

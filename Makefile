@@ -1,8 +1,11 @@
 CXX := g++
+
 CXXFLAGS := -std=c++17 -Wall -Wextra -pthread -Iinclude
+LDLIBS := -lmosquitto
 
 BUILD_DIR := build
 TARGET := $(BUILD_DIR)/rt_inspection
+
 SRCS := $(wildcard src/*.cpp)
 
 .PHONY: all run clean
@@ -11,7 +14,7 @@ all: $(TARGET)
 
 $(TARGET): $(SRCS)
 	mkdir -p $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET) $(LDLIBS)
 
 run: $(TARGET)
 	./$(TARGET)
