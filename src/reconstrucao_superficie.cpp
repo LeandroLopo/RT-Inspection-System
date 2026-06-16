@@ -21,9 +21,8 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer,
 
     int somaLeituras = 0;
 
-    bool primeiraMedia = true;
-    double mediaAnterior = 0.0;
-
+    bool primeiraLeitura = true;
+    double leituraAnterior = 0.0;
     bool falhaJaDetectada = false;
 
     while (true) {
@@ -89,7 +88,8 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer,
 
         ponto.timestamp = leitura.timestamp;
         ponto.x = posicao.x;
-        ponto.y = mediaMovel;
+        ponto.y = mediaMovel; 
+        std::cout << "SUPERFICIE x=" << ponto.x  << " y=" << ponto.y << std::endl;
         ponto.confianca = 1.0;
 
         double limiteFalha;
@@ -101,58 +101,65 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer,
 
             limiteFalha = systemParameters.limite_falha;
         }
+if (!primeiraLeitura)
+{
+    const double variacao =
+        std::abs(leitura.i_lidar - leituraAnterior);
 
-        if (!primeiraMedia) {
-            const double variacao =
-                std::abs(mediaMovel - mediaAnterior);
+    if (variacao > limiteFalha)
+    {
+        if (!falhaJaDetectada)
+        {
+            falhaJaDetectada = true;
 
-            if (variacao > limiteFalha && !falhaJaDetectada) {
-                falhaJaDetectada = true;
+            {
+                std::lock_guard<std::mutex> trava(
+                    robotState.mutex_estado
+                );
 
-                {
-                    std::lock_guard<std::mutex> trava(
-                        robotState.mutex_estado
-                    );
+                robotState.estado.e_inspecao = true;
+            }
 
-                    robotState.estado.e_inspecao = true;
-                }
+            {
+                std::lock_guard<std::mutex> trava(
+                    sharedActuatorData.mutex_atuadores
+                );
 
-                {
-                    std::lock_guard<std::mutex> trava(
-                        sharedActuatorData.mutex_atuadores
-                    );
+                sharedActuatorData.atuadores.o_liga_camera = true;
+            }
 
-                    sharedActuatorData.atuadores.o_liga_camera = true;
-                }
+            {
+                std::lock_guard<std::mutex> trava(
+                    cameraEvent.mutex_camera
+                );
 
-                {
-                    std::lock_guard<std::mutex> trava(
-                        cameraEvent.mutex_camera
-                    );
+                cameraEvent.falha_detectada = true;
+                cameraEvent.timestamp = ponto.timestamp;
+                cameraEvent.x = ponto.x;
+                cameraEvent.y = ponto.y;
+            }
 
-                    cameraEvent.falha_detectada = true;
-                    cameraEvent.timestamp = ponto.timestamp;
-                    cameraEvent.x = ponto.x;
-                    cameraEvent.y = ponto.y;
-                }
+            cameraEvent.camera_event_var.notify_one();
 
-                cameraEvent.camera_event_var.notify_one();
+            {
+                std::lock_guard<std::mutex> trava(coutMutex);
 
-                {
-                    std::lock_guard<std::mutex> trava(coutMutex);
-
-                    std::cout << "Falha detectada: x="
-                              << ponto.x
-                              << " y=" << ponto.y
-                              << " variacao=" << variacao
-                              << " limite=" << limiteFalha
-                              << std::endl;
-                }
+                std::cout << "Falha detectada: x="
+                          << ponto.x
+                          << " y=" << ponto.y
+                          << " variacao=" << variacao
+                          << " limite=" << limiteFalha
+                          << std::endl;
             }
         }
-
-        mediaAnterior = mediaMovel;
-        primeiraMedia = false;
+    }
+    else
+    {
+        falhaJaDetectada = false;
+    }
+}
+      leituraAnterior = leitura.i_lidar;
+      primeiraLeitura = false;
 
         {
             std::lock_guard<std::mutex> trava(

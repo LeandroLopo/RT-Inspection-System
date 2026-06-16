@@ -69,7 +69,7 @@ void ControleNavegacao(SharedCommand &sharedCommand,
                 emInspecao
                     ? std::min(
                         static_cast<double>(comando.j_sp_velocidade),
-                        1.0
+                        0.0
                     )
                     : static_cast<double>(comando.j_sp_velocidade);
 
@@ -101,7 +101,11 @@ void ControleNavegacao(SharedCommand &sharedCommand,
             erroAnterior = 0.0;
 
             if (comando.c_para) {
-                aceleracao = -100;
+                  aceleracao = 0;
+                {
+                    std::lock_guard<std::mutex> trava(sharedCommand.mutex_comando);
+                    sharedCommand.comando.j_sp_velocidade = 0;
+                }
             }
             else if (comando.c_direita) {
                 aceleracao = 70;

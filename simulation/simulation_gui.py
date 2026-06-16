@@ -138,6 +138,10 @@ class SimulacaoTunel:
             self.estado_encoder = not self.estado_encoder
             self.ultimo_metro_encoder += 1
 
+        while self.ultimo_metro_encoder > metro_atual:
+            self.estado_encoder = not self.estado_encoder
+            self.ultimo_metro_encoder -= 1
+
     def atualizar_movimento(self, dt: float) -> None:
         with self.mutex_atuadores:
             comando_motor = self.atuadores.aceleracao
@@ -153,8 +157,8 @@ class SimulacaoTunel:
         self.velocidade += aceleracao_resultante * dt
 
         self.velocidade = max(
-            0.0,
-            min(self.velocidade, VELOCIDADE_MAXIMA)
+            -VELOCIDADE_MAXIMA,
+             min(self.velocidade, VELOCIDADE_MAXIMA)
         )
 
         self.x += self.velocidade * dt
@@ -629,7 +633,7 @@ def main() -> None:
     )
 
     pygame.display.set_caption(
-        "RT Inspection System - Simulacao"
+        "RT Inspection System - Simulação"
     )
 
     relogio = pygame.time.Clock()

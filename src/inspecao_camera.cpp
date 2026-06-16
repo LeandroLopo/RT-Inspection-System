@@ -4,6 +4,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData)
 {
@@ -39,12 +41,7 @@ void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, Shar
                       << std::endl;
         }
 
-        volatile double resultado = 0.0;
-        for (int i = 0; i < 8000000; i++)
-        {
-            resultado += std::sin(i * 0.001) * std::cos(i * 0.0005);
-        }
-
+        std::this_thread::sleep_for(std::chrono::seconds(2));
         {
             std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
             sharedActuatorData.atuadores.o_liga_camera = false;
@@ -58,7 +55,6 @@ void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, Shar
         {
             std::lock_guard<std::mutex> trava(coutMutex);
             std::cout << "InspecaoCamera: processamento finalizado resultado="
-                      << resultado
                       << std::endl;
         }
     }

@@ -55,7 +55,7 @@ class ComandoRemoto:
     c_esquerda: bool = False
     c_para: bool = False
     j_sp_velocidade: int = 2
-    limite_falha: float = 10.0
+    limite_falha: float = 5.0
 
 
 @dataclass
@@ -66,7 +66,7 @@ class EstadoRecebido:
     velocidade: float = 0.0
     o_aceleracao: int = 0
     o_liga_camera: bool = False
-    limite_falha: float = 10.0
+    limite_falha: float = 5.0
 
 
 @dataclass
@@ -74,7 +74,7 @@ class DadosInterface:
     comando: ComandoRemoto = field(default_factory=ComandoRemoto)
     estado: EstadoRecebido = field(default_factory=EstadoRecebido)
 
-    pontos_superficie: list[tuple[float, float]] = field(default_factory=list)
+    pontos_superficie: dict[float, float] = field(default_factory=dict)
 
     conectado: bool = False
     finalizado: bool = False
@@ -195,7 +195,7 @@ def ao_receber_mensagem(
             y = float(conteudo.get("y", 0.0))
 
             with dados.mutex:
-                dados.pontos_superficie.append((x, y))
+                dados.pontos_superficie[round(x, 2)] = y
 
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as erro:
         with dados.mutex:
@@ -417,8 +417,8 @@ def desenhar_interface(
             j_sp_velocidade=dados.comando.j_sp_velocidade,
             limite_falha=dados.comando.limite_falha
         )
-
-        pontos = list(dados.pontos_superficie)
+    with dados.mutex:
+        pontos = sorted(dados.pontos_superficie.items())        
         conectado = dados.conectado
         status = dados.status
 
@@ -458,7 +458,7 @@ def desenhar_interface(
     desenhar_cartao(
         tela,
         fonte,
-        "Posicao",
+        "Posição",
         f"{estado.posicao_x:.2f} m",
         225,
         99,

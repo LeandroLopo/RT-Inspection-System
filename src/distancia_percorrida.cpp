@@ -45,14 +45,33 @@ void DistanciaPercorrida(EncoderBuffer &encoderBuffer, PositionBuffer &positionB
         PositionData posicao;
         posicao.timestamp = leitura.timestamp;
 
+        
+        if (houveMudanca)
         {
-            std::lock_guard<std::mutex> trava(robotState.mutex_estado);
-            if (houveMudanca)
+            double velocidadeAtual;
+
             {
-                robotState.estado.posicao_x += 1.0;
+                std::lock_guard<std::mutex> trava(robotState.mutex_estado);
+                velocidadeAtual = robotState.estado.velocidade;
+
+                if (velocidadeAtual >= 0.0)
+                {
+                    robotState.estado.posicao_x += 1.0;
+                }
+                else
+                {
+                    robotState.estado.posicao_x -= 1.0;
+                }
+
+                if (robotState.estado.posicao_x < 0.0)
+                {
+                    robotState.estado.posicao_x = 0.0;
+                }
+
+                posicao.x = robotState.estado.posicao_x;
             }
-            posicao.x = robotState.estado.posicao_x;
         }
+    
 
         {
             std::lock_guard<std::mutex> trava(positionBuffer.mutex_posicao);

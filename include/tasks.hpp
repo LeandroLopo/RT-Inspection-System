@@ -50,4 +50,4 @@ void ControleNavegacao(SharedCommand &sharedCommand,
 
 void InspecaoCamera(CameraEvent &cameraEvent,
                     SharedRobotState &robotState,
-                    SharedActuatorData &sharedActuatorData);
+                    SharedActuatorData &sharedActuatorData); 

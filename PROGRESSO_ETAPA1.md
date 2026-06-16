@@ -340,7 +340,7 @@ Exemplo de payload:
   "c_esquerda": false,
   "c_para": false,
   "j_sp_velocidade": 2,
-  "limite_falha": 10.0
+  "limite_falha": 5.0
 }
 ```
 
