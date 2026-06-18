@@ -2,10 +2,11 @@
 #include "log.hpp"
 #include "shared_state.hpp"
 
+#include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <thread>
-#include <chrono>
 
 void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, SharedActuatorData &sharedActuatorData)
 {
@@ -41,7 +42,25 @@ void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, Shar
                       << std::endl;
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        const auto inicioProcessamento = std::chrono::steady_clock::now();
+        const auto fimProcessamento =
+            inicioProcessamento + std::chrono::seconds(2);
+
+        double acumulador = 0.0;
+        std::uint64_t iteracoes = 0;
+
+        while (std::chrono::steady_clock::now() < fimProcessamento)
+        {
+            for (int indice = 0; indice < 10000; indice++)
+            {
+                const double valor =
+                    static_cast<double>(indice) * 0.001 + x + y;
+
+                acumulador += std::sin(valor) * std::cos(valor * 0.5);
+                iteracoes++;
+            }
+        }
+
         {
             std::lock_guard<std::mutex> trava(sharedActuatorData.mutex_atuadores);
             sharedActuatorData.atuadores.o_liga_camera = false;
@@ -55,6 +74,8 @@ void InspecaoCamera(CameraEvent &cameraEvent, SharedRobotState &robotState, Shar
         {
             std::lock_guard<std::mutex> trava(coutMutex);
             std::cout << "InspecaoCamera: processamento finalizado resultado="
+                      << acumulador
+                      << " iteracoes=" << iteracoes
                       << std::endl;
         }
     }

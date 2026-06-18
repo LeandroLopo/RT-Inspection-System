@@ -69,7 +69,7 @@ void ControleNavegacao(SharedCommand &sharedCommand,
                 emInspecao
                     ? std::min(
                         static_cast<double>(comando.j_sp_velocidade),
-                        0.0
+                        1.0
                     )
                     : static_cast<double>(comando.j_sp_velocidade);
 

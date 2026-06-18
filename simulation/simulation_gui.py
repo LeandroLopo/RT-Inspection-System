@@ -24,7 +24,7 @@ TOPICO_ATUADORES = "atr/core/actuators"
 # Configuracoes da simulacao fisica
 # ============================================================
 
-PERIODO_SIMULACAO = 0.08      # 50 ms
+PERIODO_SIMULACAO = 0.08      # 80 ms
 COMPRIMENTO_TUNEL = 35.0       # metros
 
 VELOCIDADE_MAXIMA = 3.0        # m/s
@@ -162,6 +162,10 @@ class SimulacaoTunel:
         )
 
         self.x += self.velocidade * dt
+
+        if self.x <= 0.0:
+            self.x = 0.0
+            self.velocidade = max(0.0, self.velocidade)
 
         if self.x >= COMPRIMENTO_TUNEL:
             self.x = COMPRIMENTO_TUNEL

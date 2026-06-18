@@ -88,8 +88,7 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer,
 
         ponto.timestamp = leitura.timestamp;
         ponto.x = posicao.x;
-        ponto.y = mediaMovel; 
-        std::cout << "SUPERFICIE x=" << ponto.x  << " y=" << ponto.y << std::endl;
+        ponto.y = mediaMovel;
         ponto.confianca = 1.0;
 
         double limiteFalha;
@@ -101,65 +100,67 @@ void ReconstrucaoSuperficie(SensorBuffer &buffer,
 
             limiteFalha = systemParameters.limite_falha;
         }
-if (!primeiraLeitura)
-{
-    const double variacao =
-        std::abs(leitura.i_lidar - leituraAnterior);
 
-    if (variacao > limiteFalha)
-    {
-        if (!falhaJaDetectada)
+        if (!primeiraLeitura)
         {
-            falhaJaDetectada = true;
+            const double variacao =
+                std::abs(leitura.i_lidar - leituraAnterior);
 
+            if (variacao > limiteFalha)
             {
-                std::lock_guard<std::mutex> trava(
-                    robotState.mutex_estado
-                );
+                if (!falhaJaDetectada)
+                {
+                    falhaJaDetectada = true;
 
-                robotState.estado.e_inspecao = true;
+                    {
+                        std::lock_guard<std::mutex> trava(
+                            robotState.mutex_estado
+                        );
+
+                        robotState.estado.e_inspecao = true;
+                    }
+
+                    {
+                        std::lock_guard<std::mutex> trava(
+                            sharedActuatorData.mutex_atuadores
+                        );
+
+                        sharedActuatorData.atuadores.o_liga_camera = true;
+                    }
+
+                    {
+                        std::lock_guard<std::mutex> trava(
+                            cameraEvent.mutex_camera
+                        );
+
+                        cameraEvent.falha_detectada = true;
+                        cameraEvent.timestamp = ponto.timestamp;
+                        cameraEvent.x = ponto.x;
+                        cameraEvent.y = ponto.y;
+                    }
+
+                    cameraEvent.camera_event_var.notify_one();
+
+                    {
+                        std::lock_guard<std::mutex> trava(coutMutex);
+
+                        std::cout << "Falha detectada: x="
+                                  << ponto.x
+                                  << " y=" << ponto.y
+                                  << " variacao=" << variacao
+                                  << " limite=" << limiteFalha
+                                  << std::endl;
+                    }
+                }
             }
-
+            else
             {
-                std::lock_guard<std::mutex> trava(
-                    sharedActuatorData.mutex_atuadores
-                );
-
-                sharedActuatorData.atuadores.o_liga_camera = true;
-            }
-
-            {
-                std::lock_guard<std::mutex> trava(
-                    cameraEvent.mutex_camera
-                );
-
-                cameraEvent.falha_detectada = true;
-                cameraEvent.timestamp = ponto.timestamp;
-                cameraEvent.x = ponto.x;
-                cameraEvent.y = ponto.y;
-            }
-
-            cameraEvent.camera_event_var.notify_one();
-
-            {
-                std::lock_guard<std::mutex> trava(coutMutex);
-
-                std::cout << "Falha detectada: x="
-                          << ponto.x
-                          << " y=" << ponto.y
-                          << " variacao=" << variacao
-                          << " limite=" << limiteFalha
-                          << std::endl;
+                falhaJaDetectada = false;
             }
         }
-    }
-    else
-    {
-        falhaJaDetectada = false;
-    }
-}
-      leituraAnterior = leitura.i_lidar;
-      primeiraLeitura = false;
+
+        leituraAnterior = leitura.i_lidar;
+        primeiraLeitura = false;
 
         {
             std::lock_guard<std::mutex> trava(

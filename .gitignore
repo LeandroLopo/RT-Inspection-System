@@ -1,0 +1,13 @@
+.deps/
+.vscode/
+venv/
+__pycache__/
+*.py[cod]
+
+build/
+surface_points.csv
+
+*.aux
+*.log
+*.out
+*.toc
