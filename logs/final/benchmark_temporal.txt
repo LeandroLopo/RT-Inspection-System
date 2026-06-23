@@ -1,0 +1,8 @@
+cd /tmp && "/home/leandrolopo/ufmg/atr/Trabalho ATR/RT-Inspection-System/build/benchmark_temporal"
+Benchmark temporal (20 rodadas, 2000 amostras)
+Trecho                         media(us)     p95(us)     max(us)
+DistanciaPercorrida                1.360       2.183       3.120
+ReconstrucaoSuperficie             1.830       1.889       1.915
+ColetorDados                      12.453      12.688      12.715
+JSON dump + parse                 21.629      22.231      22.590
+InspecaoCamera: 2000.256 ms

@@ -8,6 +8,7 @@ build/
 surface_points.csv
 
 *.aux
+*.lof
 *.log
 *.out
 *.toc

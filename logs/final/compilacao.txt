@@ -1,0 +1,2 @@
+mkdir -p build
+g++ -std=c++17 -Wall -Wextra -pthread -Iinclude src/coletor_dados.cpp src/comando_navegacao.cpp src/controle_navegacao.cpp src/distancia_percorrida.cpp src/inspecao_camera.cpp src/log.cpp src/main.cpp src/mqtt_actuator_publisher.cpp src/mqtt_command_subscriber.cpp src/mqtt_sensor_subscriber.cpp src/mqtt_state_publisher.cpp src/mqtt_surface_publisher.cpp src/reconstrucao_superficie.cpp src/simulacao_sensores.cpp src/time_utils.cpp -o build/rt_inspection -lmosquitto
